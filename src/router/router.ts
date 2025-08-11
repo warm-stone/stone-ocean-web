@@ -5,7 +5,7 @@ import App from '@/App.vue'
 // import NetHome from '@/views/NetHome.vue'
 import _Test from '@/views/MyTest.vue'
 import BiographicalNote from '@/views/BiographicalNote.vue'
-// import OAuth2Login from "@/views/OAuth2Login.vue";
+import OAuth2Login from "@/views/OAuth2Login.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,11 +20,11 @@ const router = createRouter({
       name: '简历',
       component: BiographicalNote
     },
-    // {
-    //   path: '/user/oauth2',
-    //   name: 'oauth2 授权信息传递',
-    //   component: OAuth2Login
-    // },
+    {
+      path: '/login/oauth2/code/:registrationId',
+      name: 'oauth2 授权信息传递',
+      component: OAuth2Login
+    },
     {
       path: '/test',
       name: 'test',

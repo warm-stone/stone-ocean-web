@@ -22,5 +22,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  server: {
+    host: '0.0.0.0', // 允许所有接口访问（包括 localhost 和 127.0.0.1）
+    port: 5173, // 确保端口号与启动脚本一致
+  },
 
 })
