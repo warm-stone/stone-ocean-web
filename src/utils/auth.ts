@@ -13,3 +13,7 @@ export function removeToken() {
     localStorage.removeItem(TOKEN_KEY)
 }
 
+export function hasToken() {
+    return !!localStorage.getItem(TOKEN_KEY)
+}
+

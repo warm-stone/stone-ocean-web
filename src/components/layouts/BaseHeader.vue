@@ -6,17 +6,21 @@ import Login from "@/components/layouts/Login.vue";
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
-const avatarErrorHandler = () => true
 
 </script>
 
 <template>
-  <el-menu class="el-menu-demo" mode="horizontal">
+  <el-menu class="el-menu-demo"
+           mode="horizontal"
+           :ellipsis="false"
+  >
 
     <el-menu-item index="1">博客</el-menu-item>
-    <el-menu-item index="">vote</el-menu-item>
+    <el-menu-item index="2">
+      vote
+    </el-menu-item>
 
-    <el-menu-item style="margin-left: auto;">
+    <el-menu-item index="3">
       <el-switch
           v-model="isDark"
           style="--el-switch-on-color: #0960bd; --el-switch-off-color: #f60"
@@ -27,17 +31,18 @@ const avatarErrorHandler = () => true
 
       />
     </el-menu-item>
-    <el-menu-item style="margin-right: 20px;">
-      <el-avatar
-          @error="avatarErrorHandler"
-          onclick=""
-        >
-      </el-avatar>
+    <el-menu-item index="4">
+      <login />
     </el-menu-item>
   </el-menu>
+<!--  <Login :dialog-form-visible="false"/>-->
 
-  <Login :dialog-form-visible="true" />
 </template>
 
 <style scoped>
+
+.el-menu--horizontal > .el-menu-item:nth-child(2) {
+  margin-right: auto;
+}
+
 </style>

@@ -1,69 +1,95 @@
 <template>
-  <div aria-label="A complete example of page header">
-    <el-page-header @back="onBack" breadcrumb="Back">
-      <template #breadcrumb>
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item :to="{ path: './page-header.html' }">
-            homepage
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>
-            <a href="./page-header.html">route 1</a>
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>route 2</el-breadcrumb-item>
-        </el-breadcrumb>
-      </template>
-      <template #content>
-        <div class="flex items-center">
-          <el-avatar
-              class="mr-3"
-              :size="32"
-              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-          />
-          <span class="text-large font-600 mr-3"> Title </span>
-          <span
-              class="text-sm mr-2"
-              style="color: var(--el-text-color-regular)"
-          >
-            Sub title
-          </span>
-          <el-tag>Default</el-tag>
-        </div>
-      </template>
-      <template #extra>
-        <div class="flex items-center">
-          <el-button>Print</el-button>
-          <el-button type="primary" class="ml-2">Edit</el-button>
-        </div>
-      </template>
 
-      <el-descriptions :column="3" size="small" class="mt-4">
-        <el-descriptions-item label="Username">
-          kooriookami
-        </el-descriptions-item>
-        <el-descriptions-item label="Telephone">
-          18100000000
-        </el-descriptions-item>
-        <el-descriptions-item label="Place">Suzhou</el-descriptions-item>
-        <el-descriptions-item label="Remarks">
-          <el-tag size="small">School</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="Address">
-          No.1188, Wuzhong Avenue, Wuzhong District, Suzhou, Jiangsu Province
-        </el-descriptions-item>
-      </el-descriptions>
-      <p class="mt-4 text-sm">
-        Element Plus team uses <b>weekly</b> release strategy under normal
-        circumstance, but critical bug fixes would require hotfix so the actual
-        release number <b>could be</b> more than 1 per week.
-      </p>
-    </el-page-header>
-  </div>
+  <el-avatar
+      @onclick="userInfo"
+  >
+
+  </el-avatar>
+
+  <el-dialog v-model="dialogFormVisible" title="登录" width="500">
+    <el-form :model="form" size="large" label-position="top">
+      <el-form-item label="账户">
+        <el-input v-model="form.name" autocomplete="off"/>
+      </el-form-item>
+      <el-form-item label="密码">
+        <el-input v-model="form.name" type="password" autocomplete="off"/>
+      </el-form-item>
+    </el-form>
+
+    <div style="text-align:center">
+
+      <img style="height:25px" src="@/assets/github.svg" alt="git登录"
+           @click="getCode"
+      />
+    </div>
+    <template #footer>
+      <div class="dialog-footer" style="text-align:center">
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">
+          登录
+        </el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
-<script setup lang="ts">
-import { ElNotification as notify } from 'element-plus'
+<script lang="ts" setup>
+import {reactive, ref} from 'vue'
+import axios from "axios";
+import {hasToken} from "@/utils/auth.ts";
 
-const onBack = () => {
-  notify('Back')
+const baseUrl = import.meta.env.VITE_BASE_URL
+
+
+
+const form = reactive({
+  name: '',
+  region: '',
+  date1: '',
+  date2: '',
+  delivery: false,
+  type: [],
+  resource: '',
+  desc: '',
+})
+
+// 三方登录
+const dialogFormVisible = ref(false)
+async function getCode() {
+  const clientInfo_p = await axios.get(baseUrl + '/oauth2Login/github/code')
+  console.log(clientInfo_p)
+  const clientInfo = clientInfo_p.data.data
+
+
+  console.log('成功获取 code:', clientInfo)
+
+  // 组装参数
+  const redirectParams = new URLSearchParams()
+  redirectParams.append('response_type', 'code')
+  redirectParams.append('client_id', clientInfo.clientId)
+  const scope = clientInfo.scopes || []
+  redirectParams.append('scope', scope.join(' '))
+  redirectParams.append('redirect_uri', 'http://' + window.location.host + '/login/oauth2/code/github')
+
+  // 构建最终的重定向 URL
+  const finalRedirectUrl = `${clientInfo.authorizationUri}?${redirectParams.toString()}`
+
+  console.log('组装后的重定向 URL:', finalRedirectUrl)
+
+  window.location.href = finalRedirectUrl
 }
+
+
+// 头像点击事件
+async function userInfo() {
+
+  if ( hasToken()) {
+    // 转向个人设置
+    alert('已登录')
+  }
+  else {
+    dialogFormVisible.value = true
+  }
+}
+
 </script>
