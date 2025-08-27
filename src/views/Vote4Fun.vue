@@ -39,8 +39,10 @@ onMounted(() => {
 
 <template>
 
-  <div class="demo-pagination-block">
-    <el-table :data="rankList.records" stripe style="width: 100%">
+  <div class="ranklist">
+    <el-table :data="rankList.records" stripe
+              size="large"
+    >
       <el-table-column prop="title" label="标题" width="180"/>
       <el-table-column prop="description" label="描述" />
       <el-table-column prop="createdTime" label="创建时间" width="180"/>
@@ -59,5 +61,9 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
+.ranklist {
+  margin-top: 20px;
+  margin-left: 20%;
+  margin-right: 20%;
+}
 </style>
