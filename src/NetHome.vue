@@ -1,8 +1,8 @@
 <template>
 
   <el-config-provider>
-    <BaseHeader />
-    <RouterView />
+    <base-header />
+    <router-view />
   </el-config-provider>
 </template>
 

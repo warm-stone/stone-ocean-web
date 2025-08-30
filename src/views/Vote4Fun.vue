@@ -1,9 +1,8 @@
 <script setup lang="ts">
 
-import {ref} from 'vue'
+import {onMounted, ref,} from 'vue'
 import {getToken} from "@/utils/auth.ts";
 import axios from "axios";
-import {onMounted} from "vue";
 
 const backendUrl = import.meta.env.VITE_BASE_URL
 const rankList: any = ref({

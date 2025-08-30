@@ -1,34 +1,40 @@
-<template>
-  <div class="demo-collapse">
-    <el-collapse v-model="activeNames" @change="handleChange">
-      <el-collapse-item title="Consistency" name="1">
-        <template #title="{ isActive }">
+<script setup lang="ts">
 
-        </template>
-        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-          <el-tab-pane label="子项" name="first">
-            <ul v-infinite-scroll="load" class="infinite-list" style="overflow: auto">
-              <li v-for="i in count" :key="i" class="infinite-list-item">{{ i }}</li>
-            </ul>
-          </el-tab-pane>
-          <el-tab-pane label="投票记录" name="second">
-            <ul v-infinite-scroll="load" class="infinite-list" style="overflow: auto">
-              <li v-for="i in count" :key="i" class="infinite-list-item">{{ i }}</li>
-            </ul>
-          </el-tab-pane>
-        </el-tabs>
-      </el-collapse-item>
-    </el-collapse>
-  </div>
+import VoteComponent from "@/components/VoteComponent.vue";
+import {ref} from "vue";
+
+
+const rankList = ref({
+      id: 1,
+      title: 'bt',
+      description: 'description',
+      coverUrl: 'coverUrl',
+      agreeName: '升级',
+      disagreeName: '守护',
+      creator: 1,
+    }
+)
+const rankMomber = ref({
+
+  rankListId: 1,
+  parentId: 1,
+  createUserId: 1,
+  scoreSum: 10,
+  scoreCalculate: 5,
+  name: 'name',
+  description: 'descriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription',
+  coverUrl: 'url',
+  creator: 1,
+  creatorName: 'creatorName',
+  created_time: 'time'
+    }
+)
+</script>
+
+<template>
+  <vote-component :rank-list="rankList" :rank-member="rankMomber" />
+
 </template>
 
-<script lang="ts" setup>
-import { ref } from 'vue'
-
-import type { CollapseModelValue } from 'element-plus'
-
-const activeNames = ref(['1'])
-const handleChange = (val: CollapseModelValue) => {
-  console.log(val)
-}
-</script>
+<style scoped>
+</style>
