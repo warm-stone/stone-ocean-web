@@ -7,6 +7,7 @@ import _Test from '@/views/MyTest.vue'
 import BiographicalNote from '@/views/BiographicalNote.vue'
 import OAuth2Login from "@/views/OAuth2Login.vue";
 import Vote4Fun from "@/views/Vote4Fun.vue";
+import VoteDetail from "@/views/VoteDetail.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,16 @@ const router = createRouter({
             path: '/vote4fun',
             name: '投票',
             component: Vote4Fun,
+        },
+        {
+            path: '/vote4fun',
+            name: '投票',
+            component: Vote4Fun,
+        },
+        {
+            path: '/vote_detail',
+            name: '投票',
+            component: VoteDetail,
         },
         {
             path: '/biographic-note/:id',

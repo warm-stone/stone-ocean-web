@@ -83,13 +83,13 @@ async function getCode() {
 // 头像点击事件
 async function userInfo() {
 
-  if (hasToken()) {
-    // 转向个人设置
-    alert('已登录')
-  }
-  else {
+  // if (hasToken()) {
+  //   // 转向个人设置
+  //   alert('已登录')
+  // }
+  // else {
     dialogFormVisible.value = true
-  }
+  // }
 }
 
 </script>
