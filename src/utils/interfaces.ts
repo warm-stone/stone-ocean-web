@@ -22,3 +22,10 @@ export interface RankList {
     creator: number,
 
 }
+
+export interface VoteRecord {
+    id: number,
+    rankMemberId: number,
+    voteCount: number,
+    creator: number,
+}

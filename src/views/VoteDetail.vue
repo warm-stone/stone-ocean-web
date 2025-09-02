@@ -46,6 +46,7 @@ onMounted(async () => {
 .main_body {
   margin-top: 1rem;
   margin-left: 20%;
-  margin-right: 20%;;
+  margin-right: 20%;
+  border-radius: 20px;
 }
 </style>
