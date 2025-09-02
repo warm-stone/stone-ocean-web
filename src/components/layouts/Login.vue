@@ -36,7 +36,6 @@
 <script lang="ts" setup>
 import {reactive, ref} from 'vue'
 import axios from "axios";
-import {hasToken} from "@/utils/auth.ts";
 
 const baseUrl = import.meta.env.VITE_BASE_URL
 

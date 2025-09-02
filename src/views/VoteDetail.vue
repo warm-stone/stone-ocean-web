@@ -1,7 +1,12 @@
 <script setup lang="ts">
-
 import VoteComponent from "@/components/VoteComponent.vue";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
+import type {RankMember} from "@/utils/interfaces.ts";
+import axios from "axios";
+import {getToken} from "@/utils/auth.ts";
+
+const baseUrl = import.meta.env.VITE_BASE_URL
+const token = getToken()
 
 
 const rankList = ref({
@@ -14,27 +19,33 @@ const rankList = ref({
       creator: 1,
     }
 )
-const rankMember = ref({
-      id: 1,
-      rankListId: 1,
-      parentId: 1,
-      createUserId: 1,
-      scoreSum: 10,
-      scoreCalculate: 5,
-      name: 'name',
-      description: 'descriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescriptiondescription',
-      coverUrl: 'url',
-      creator: 1,
-      creatorName: 'creatorName',
-      created_time: 'time'
+const rankMember = ref<RankMember[]>([])
+onMounted(async () => {
+
+  const response = await axios.get(`${baseUrl}/rankMember/member/${rankList.value.id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
     }
-)
+  })
+  const data = response.data.data
+  rankMember.value = data
+  console.log(data)
+})
+
 </script>
 
 <template>
-  <vote-component :rank-list="rankList" :rank-member="rankMember" />
+  <el-card class="main_body" shadow="hover">
+    <vote-component :rank-list="rankList" :rank-members="rankMember"/>
+  </el-card>
 
 </template>
 
+
 <style scoped>
+.main_body {
+  margin-top: 1rem;
+  margin-left: 20%;
+  margin-right: 20%;;
+}
 </style>

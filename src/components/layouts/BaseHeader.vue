@@ -17,7 +17,7 @@ const toggleDark = useToggle(isDark);
 
     <el-menu-item index="1">博客</el-menu-item>
     <el-menu-item index="2">
-      vote
+      VOTE
     </el-menu-item>
 
     <el-menu-item index="3">

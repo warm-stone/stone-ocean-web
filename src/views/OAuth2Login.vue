@@ -26,7 +26,8 @@ async function getToken() {
   const token = response.data.data.token // 假设后端返回 { token: "your-jwt-string" }
   console.log(token)
   storeToken(token)
-  window.location.href = baseUrl
+  window.location.href = window.location.origin
+
 
 }
 
