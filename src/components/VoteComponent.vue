@@ -12,10 +12,10 @@
             <el-col :span="2">{{ member.scoreSum }}</el-col>
             <el-col :span="2">{{ member.scoreCalculate }}</el-col>
             <el-col :span="8">
-              <el-button type="primary" plain @click.stop.once="voteToMember(member.id, 1)" style="max-width: 60px">
+              <el-button type="primary" plain @click.stop.once="voteToMember(member.id, 1, member)" style="max-width: 60px">
                 {{ rankList.agreeName }}
               </el-button>
-              <el-button type="danger" plain @click.stop.once="voteToMember(member.id, -1)" style="max-width: 60px">
+              <el-button type="danger" plain @click.stop.once="voteToMember(member.id, -1, member)" style="max-width: 60px">
                 {{ rankList.disagreeName }}
               </el-button>
             </el-col>
@@ -138,7 +138,8 @@ async function handleCollapseChange(ids: string[], refresh = false) {
 
 // region 投票
 
-async function voteToMember(id: number | string, voteCount: number) {
+async function voteToMember(id: number | string, voteCount: number, member: RankMember) {
+  member.scoreSum += voteCount
   dialogFlag.value = false
   const voteData = {
     rankMemberId : id,

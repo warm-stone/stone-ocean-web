@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url' // 注意：Vite 3+ 使用 node:url
+import {fileURLToPath, URL} from 'node:url' // 注意：Vite 3+ 使用 node:url
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
+// import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -15,6 +16,11 @@ export default defineConfig({
     Components({
       resolvers: [ElementPlusResolver()],
     }),
+    // visualizer({
+    //   open: true,           // 构建完成后自动打开浏览器
+    //   gzipSize: true,       // 显示 Gzip 压缩后的大小
+    //   brotliSize: true,     // 显示 Brotli 压缩后的大小
+    // })
   ],
 
   resolve: {
