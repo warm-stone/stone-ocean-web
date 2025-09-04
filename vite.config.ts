@@ -31,6 +31,16 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // 允许所有接口访问（包括 localhost 和 127.0.0.1）
     port: 5173, // 确保端口号与启动脚本一致
+
+    // 开发代理
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8101', // 后端地址
+        changeOrigin: true, // 修改 Host 头为 target 的地址
+        secure: false,      // 如果 target 是 https，设为 true
+        // rewrite: (path) => path.replace(/^\/api/, '') // 可选：重写路径
+      }
+    }
   },
 
 })

@@ -1,8 +1,4 @@
 import {createRouter, createWebHistory} from 'vue-router'
-// import App from '../App.vue'
-// import App from '@/App.vue'
-import App from '@/App.vue'
-// import NetHome from '@/views/NetHome.vue'
 import _Test from '@/views/MyTest.vue'
 import Vote4Fun from "@/views/Vote4Fun.vue";
 
@@ -12,7 +8,7 @@ const router = createRouter({
         {
             path: '/',
             name: '',
-            redirect: 'vote4fun'
+            redirect: '/vote4fun/vote_detail'
         },
         {
             path: '/vote4fun',
@@ -20,12 +16,7 @@ const router = createRouter({
             component: Vote4Fun,
         },
         {
-            path: '/vote4fun',
-            name: '投票',
-            component: Vote4Fun,
-        },
-        {
-            path: '/vote_detail',
+            path: '/vote4fun/vote_detail',
             name: '投票',
             component: () => import("@/views/VoteDetail.vue"),
         },
@@ -45,20 +36,6 @@ const router = createRouter({
             name: 'test',
             component: _Test
         },
-
-        {
-            path: '/app',
-            name: 'app',
-            component: App
-        },
-        {
-            path: '/about',
-            name: 'about',
-            // route level code-splitting
-            // this generates a separate chunk (About.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import('../views/AboutView.vue')
-        }
     ]
 })
 

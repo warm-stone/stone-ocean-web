@@ -68,7 +68,7 @@ async function getCode() {
   redirectParams.append('client_id', clientInfo.clientId)
   const scope = clientInfo.scopes || []
   redirectParams.append('scope', scope.join(' '))
-  redirectParams.append('redirect_uri', 'http://' + window.location.host + '/login/oauth2/code/github')
+  redirectParams.append('redirect_uri', window.location.origin + '/login/oauth2/code/github')
 
   // 构建最终的重定向 URL
   const finalRedirectUrl = `${clientInfo.authorizationUri}?${redirectParams.toString()}`

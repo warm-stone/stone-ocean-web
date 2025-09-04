@@ -23,11 +23,11 @@ async function getToken() {
       "Content-Type": "text/plain"
     }
   })
-  const token = response.data.data.token // 假设后端返回 { token: "your-jwt-string" }
+  const token = response.data.data.token
   console.log(token)
   storeToken(token)
-  window.location.href = window.location.origin
 
+  window.location.href = window.location.origin
 
 }
 
@@ -40,7 +40,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  test
+
 </template>
 
 <style scoped>
