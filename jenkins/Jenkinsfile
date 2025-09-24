@@ -28,4 +28,5 @@ pipeline {
                 sh 'rsync -avr --delete ./dist  root@nginx.home:/opt/stone-ocean-front/dist'
             }
         }
+    }
 }
