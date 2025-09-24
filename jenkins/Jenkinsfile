@@ -24,34 +24,32 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                publishers:[
-                    sshPublisher(
-                        publishers:[
-                            sshPublisherDesc(
-                                configName: 'nginx.home',
-                                transfers: [
-                                    sshTransfer(
-                                        cleanRemote: false,
-                                        excludes: '',
-                                        execCommand: 'rm -r /opt/stone-ocean-front/dist || true',
-                                        execTimeout: 120000,
-                                        flatten: false,
-                                        makeEmptyDirs: false,
-                                        noDefaultExcludes: false,
-                                        patternSeparator: '[, ]+',
-                                        remoteDirectory: '/opt/stone-ocean-front/dist',
-                                        remoteDirectorySDF: false,
-                                        removePrefix: '',
-                                        sourceFiles: 'dist/*'
-                                    )
-                                ],
-                                usePromotionTimestamp: false,
-                                useWorkspaceInPromotion: false,
-                                verbose: false
-                            )
-                        ]
-                    )
-                ]
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'nginx.home',
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: 'rm -r /opt/stone-ocean-front/dist || true',
+                                    execTimeout: 120000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: '/opt/stone-ocean-front/dist',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: '',
+                                    sourceFiles: 'dist/*'
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ]
+                )
             }
         }
     }
