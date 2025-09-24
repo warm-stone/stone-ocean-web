@@ -63,20 +63,16 @@ pipeline {
                                     excludes: '',  // 要排除的文件模式，这里为空表示不排除任何文件
                                     execCommand:  // 远程服务器上执行的命令
                                         '''
-                                            cd /opt/stone-ocean-front
-                                            rm  -rf   dist/
-                                            tar zxvf dist.tar
-                                            rm dist.tar
                                         ''',
                                     execTimeout: 120000,  // 远程命令执行的超时时间，单位是毫秒
                                     flatten: false,  // 不将源文件目录结构展平到远程目录
                                     makeEmptyDirs: false,  // 不创建空的远程目录
                                     noDefaultExcludes: false, // 是否应用默认的排除模式
                                     patternSeparator: '[, ]+',  // 定义了用于分隔多个源文件模式的分隔符
-                                    remoteDirectory: '/opt/stone-ocean-front',  // 远程目标目录
+                                    remoteDirectory: '/opt/stone-ocean-front/dist',  // 远程目标目录
                                     remoteDirectorySDF: false,  // 可能是一个与日期时间格式化相关的选项
                                     removePrefix: '',  // 传输到远程目录之前，从源文件路径中移除的前缀
-                                    sourceFiles: 'dist.tar' // 要传输到远程服务器的源文件
+                                    sourceFiles: 'dist/**' // 要传输到远程服务器的源文件
                                 )
                             ]
                         )
