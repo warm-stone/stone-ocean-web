@@ -3,7 +3,7 @@ pipeline {
     tools {
         // 定义一个 Node.js 工具，你需要先在 Jenkins 中安装配置好 Node.js
         // 假设你的 Node.js 工具名称为 "NodeJS"
-        nodejs "NodeJS22.18.0"
+        nodejs 'NodeJS22.18.0'
     }
     environment {
         VITE_BASE_URL = credentials('stone-ocean-web-base-url')
@@ -24,8 +24,34 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh ''
-                sh 'rsync -avr --delete ./dist  root@nginx.home:/opt/stone-ocean-front/dist'
+                publishers:[
+                    sshPublisher(
+                        publishers:[
+                            sshPublisherDesc(
+                                configName: 'nginx.home',
+                                transfers: [
+                                    sshTransfer(
+                                        cleanRemote: false,
+                                        excludes: '',
+                                        execCommand: 'rm -r /opt/stone-ocean-front/dist || true',
+                                        execTimeout: 120000,
+                                        flatten: false,
+                                        makeEmptyDirs: false,
+                                        noDefaultExcludes: false,
+                                        patternSeparator: '[, ]+',
+                                        remoteDirectory: '/opt/stone-ocean-front/dist',
+                                        remoteDirectorySDF: false,
+                                        removePrefix: '',
+                                        sourceFiles: 'dist/*'
+                                    )
+                                ],
+                                usePromotionTimestamp: false,
+                                useWorkspaceInPromotion: false,
+                                verbose: false
+                            )
+                        ]
+                    )
+                ]
             }
         }
     }
