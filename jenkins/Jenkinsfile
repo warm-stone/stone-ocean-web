@@ -69,7 +69,7 @@ pipeline {
                                     makeEmptyDirs: false,  // 不创建空的远程目录
                                     noDefaultExcludes: false, // 是否应用默认的排除模式
                                     patternSeparator: '[, ]+',  // 定义了用于分隔多个源文件模式的分隔符
-                                    remoteDirectory: '/opt/stone-ocean-front/dist',  // 远程目标目录
+                                    remoteDirectory: 'www/stone-ocean-web/',  // 远程目标目录
                                     remoteDirectorySDF: false,  // 可能是一个与日期时间格式化相关的选项
                                     removePrefix: '',  // 传输到远程目录之前，从源文件路径中移除的前缀
                                     sourceFiles: 'dist/**' // 要传输到远程服务器的源文件
