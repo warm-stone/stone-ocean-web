@@ -67,7 +67,6 @@ pipeline {
                                     excludes: '',  // 要排除的文件模式，这里为空表示不排除任何文件
                                     execCommand:  // 远程服务器上执行的命令
                                         '''
-                                        chmod
                                         ''',
                                     execTimeout: 120000,  // 远程命令执行的超时时间，单位是毫秒
                                     flatten: false,  // 不将源文件目录结构展平到远程目录
