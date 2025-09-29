@@ -15,7 +15,7 @@ export default defineConfig({
         'element-plus',
         'axios',
         'vue-router',
-        '@element-plus/icons-vue'
+        '@element-plus/icons-vue',
       ],
       plugins: [
         externalGlobals({
@@ -50,6 +50,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:8101', // 后端地址
+        // target: 'http://debian-n5105.home:8101', // 后端地址
         changeOrigin: true, // 修改 Host 头为 target 的地址
         secure: false,      // 如果 target 是 https，设为 true
         // rewrite: (path) => path.replace(/^\/api/, '') // 可选：重写路径

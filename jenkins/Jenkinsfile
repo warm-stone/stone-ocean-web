@@ -1,0 +1,89 @@
+pipeline {
+    agent  any
+
+    options {
+        ansiColor('xterm')  // 启用 ANSI 颜色支持
+    }
+    tools {
+        // 定义一个 Node.js 工具，你需要先在 Jenkins 中安装配置好 Node.js
+        // 假设你的 Node.js 工具名称为 "NodeJS"
+        nodejs 'NodeJS22.18.0'
+    }
+    environment {
+        VITE_BASE_URL = credentials('stone-ocean-web-base-url')
+    }
+
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                // 使用 npm 或 yarn 安装项目依赖
+                sh 'pnpm install' // 或者使用 'yarn install'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'pnpm run build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+//                 sshPublisher(
+//                     publishers: [
+//                         sshPublisherDesc(
+//                             configName: 'nginx.home',
+//                             transfers: [
+//                                 sshTransfer(
+//                                     cleanRemote: false,
+//                                     excludes: '',
+//                                     execCommand: 'rm -r /opt/stone-ocean-front/dist || true',
+//                                     execTimeout: 120000,
+//                                     flatten: false,
+//                                     makeEmptyDirs: false,
+//                                     noDefaultExcludes: false,
+//                                     patternSeparator: '[, ]+',
+//                                     remoteDirectory: '/opt/stone-ocean-front/dist',
+//                                     remoteDirectorySDF: false,
+//                                     removePrefix: '',
+//                                     sourceFiles: 'dist/*'
+//                                 )
+//                             ],
+//                             usePromotionTimestamp: false,
+//                             useWorkspaceInPromotion: false,
+//                             verbose: false
+//                         )
+//                     ]
+//                 )
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'nginx.home',
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false,
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: true, // 传输文件之前清除远程目录
+                                    excludes: '',  // 要排除的文件模式，这里为空表示不排除任何文件
+                                    execCommand:  // 远程服务器上执行的命令
+                                        '''
+                                        ''',
+                                    execTimeout: 120000,  // 远程命令执行的超时时间，单位是毫秒
+                                    flatten: false,  // 不将源文件目录结构展平到远程目录
+                                    makeEmptyDirs: false,  // 不创建空的远程目录
+                                    noDefaultExcludes: false, // 是否应用默认的排除模式
+                                    patternSeparator: '[, ]+',  // 定义了用于分隔多个源文件模式的分隔符
+                                    remoteDirectory: '/www/stone-ocean-web/',  // 远程目标目录
+                                    remoteDirectorySDF: false,  // 可能是一个与日期时间格式化相关的选项
+                                    removePrefix: '',  // 传输到远程目录之前，从源文件路径中移除的前缀
+                                    sourceFiles: 'dist/**' // 要传输到远程服务器的源文件
+                                )
+                            ]
+                        )
+                    ]
+                )
+            }
+
+        }
+    }
+}
