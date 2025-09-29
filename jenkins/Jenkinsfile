@@ -17,7 +17,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 // 使用 npm 或 yarn 安装项目依赖
-                sh 'pnpm install' // 或者使用 'yarn install'
+                sh 'corepack enable pnpm'
+                sh 'pnpm i' // 或者使用 'yarn install'
             }
         }
         stage('Build') {
