@@ -3,7 +3,7 @@
     <el-collapse
         @change="handleCollapseChange"
         expand-icon-position="left">
-      <el-collapse-item :name="member.id" v-if="sortedRankMembers" v-for="member in sortedRankMembers" :key="member.id">
+      <el-collapse-item :name="member.id" v-for="member in sortedRankMembers" :key="member.id">
         <template #title>
           <el-row style="margin-left: 0; margin-right: 0" :gutter="20">
             <el-col :span="8">
@@ -40,6 +40,7 @@
             <el-scrollbar max-height="400px">
               <el-card style="border-radius: 0;" shadow="hover"
                        v-for="voteRecordSumItem in getVoteRecordSum(member.id)"
+                       :key="voteRecordSumItem.id"
               >
                 {{ voteRecordSumItem }}
               </el-card>
