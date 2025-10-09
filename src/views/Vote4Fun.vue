@@ -1,60 +1,62 @@
 <script setup lang="ts">
-
-import {onMounted, ref,} from 'vue'
-import {getToken} from "@/utils/auth.ts";
-import axios from "axios";
+import { onMounted, ref } from 'vue'
+import { getToken } from '@/utils/auth.ts'
+import axios from 'axios'
+import RankListComponent from '@/components/RankListComponent.vue'
+import type { PageResult, RankList } from '@/utils/interfaces.ts'
+import router from '@/router/router.ts'
 
 const backendUrl = import.meta.env.VITE_BASE_URL
-const rankList: any = ref({
+const rankList = ref<PageResult<RankList>>({
   page: 1,
-  size: 3,
-  records: [
-    {
-      title: '',
-      description: '',
-      createdTime: '',
-
-    }
-  ]
+  size: 0,
+  total: 0,
+  records: [],
 })
 const page = ref(1)
-const size = ref(3)
+const size = ref(5)
 
 async function getRankList() {
   const token = getToken()
-  const response = await axios.get(`${backendUrl}/rankList/page?page=${page.value}&size=${size.value}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    }
-  })
-  console.log(response.data);
+  const response = await axios.get(
+    `${backendUrl}/rankList/page?page=${page.value}&size=${size.value}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  )
   rankList.value = response.data.data
 }
 
 onMounted(() => {
   getRankList()
 })
+
+function gotoVoteDetail(rankListItem: RankList) {
+  router.push(`/vote4fun/vote_detail/${rankListItem.id}`)
+}
 </script>
 
 <template>
-
   <div class="ranklist">
-    <el-table :data="rankList.records" stripe
-              size="large"
-    >
-      <el-table-column prop="title" label="标题" width="180"/>
-      <el-table-column prop="description" label="描述" />
-      <el-table-column prop="createdTime" label="创建时间" width="180"/>
-    </el-table>
+    <div class="ranklist-main">
+      <rank-list-component
+        v-for="rankItem in rankList.records"
+        :key="rankItem.id"
+        :rank-list="rankItem"
+        @click="gotoVoteDetail(rankItem)"
+      />
+    </div>
     <el-pagination
-        v-model:current-page="page"
-        v-model:page-size="size"
-        hide-on-single-page='hide-on-single-page'
-        :page-sizes="[10, 20, 50]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="rankList.total"
-        @size-change="getRankList"
-        @current-change="getRankList"
+      v-model:current-page="page"
+      v-model:page-size="size"
+      hide-on-single-page="hide-on-single-page"
+      :page-sizes="[10, 20, 50]"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="rankList.total"
+      @size-change="getRankList"
+      @current-change="getRankList"
     />
   </div>
 </template>
@@ -64,5 +66,9 @@ onMounted(() => {
   margin-top: 20px;
   margin-left: 20%;
   margin-right: 20%;
+}
+
+.ranklist-main {
+  margin-bottom: 20px;
 }
 </style>

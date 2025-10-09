@@ -1,5 +1,5 @@
 <template>
-  <div class="demo-collapse">
+  <div>
     <el-collapse
         @change="handleCollapseChange"
         expand-icon-position="left">
@@ -121,7 +121,6 @@ const getSubMembers = (id: number | string) => {
 
 async function handleCollapseChange(ids: string[], refresh = false) {
   for (const id of ids) {
-    console.log('当前处理sub' + id)
     if (subMembers.value[id] && !refresh) {
       continue;
     }
@@ -132,7 +131,6 @@ async function handleCollapseChange(ids: string[], refresh = false) {
     })
     const data = response.data.data
     subMembers.value[id] = data
-    console.log(data)
   }
 }
 // endregion
@@ -146,13 +144,11 @@ async function voteToMember(id: number | string, voteCount: number, member: Rank
     rankMemberId : id,
     voteCount: voteCount,
   } as VoteRecord
-  const response = await axios.post(`${baseUrl}/voteRecord/vote`, voteData, {
+  await axios.post(`${baseUrl}/voteRecord/vote`, voteData, {
     headers: {
       Authorization: `Bearer ${token}`,
     }
   })
-  const data = response.data
-  console.log(data)
 }
 // endregion
 
@@ -168,7 +164,6 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   if (pane.paneName != 'voteRecord') {
     return
   }
-  console.log('当前请求评论：' + id)
   if (voteRecordSumInfo.value[id] && !refresh) {
     return
   }
@@ -179,7 +174,6 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   })
   const data = response.data.data
   voteRecordSumInfo.value[id] = data
-  console.log(data)
 
 }
 // endregion
@@ -196,7 +190,6 @@ const newRankMember = ref<RankMember>(
 
     } as RankMember
 )
-console.log(newRankMember)
 
 function showAddDialog(member: RankMember) {
   dialogFlag.value = true
@@ -206,13 +199,11 @@ function showAddDialog(member: RankMember) {
 async function addMember() {
   dialogFlag.value = false
   newRankMember.value.parentId = dialogInfo.value.id
-  const response = await axios.post(`${baseUrl}/rankMember/add`, newRankMember.value, {
+  await axios.post(`${baseUrl}/rankMember/add`, newRankMember.value, {
     headers: {
       Authorization: `Bearer ${token}`,
     }
   })
-  const data = response.data
-  console.log(data)
   await handleCollapseChange([dialogInfo.value.id.toString()], true)
 }
 

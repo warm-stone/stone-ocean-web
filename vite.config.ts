@@ -45,6 +45,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // 允许所有接口访问（包括 localhost 和 127.0.0.1）
     port: 5173, // 确保端口号与启动脚本一致
+    strictPort: true, // 强制使用指定端口，端口被占用时会报错（而非自动切换）
 
     // 开发代理
     proxy: {
@@ -57,4 +58,10 @@ export default defineConfig({
       }
     }
   },
+  // 新增 preview 配置，指定预览阶段端口
+  preview: {
+    host: '0.0.0.0', // 与 server 保持一致，允许外部访问
+    port: 5173, // preview 阶段端口（和 dev 相同）
+    strictPort: true, // 强制使用指定端口，端口被占用时会报错（而非自动切换）
+  }
 })

@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: '/',
       name: '',
-      redirect: '/vote4fun/vote_detail',
+      redirect: '/vote4fun',
     },
     {
       path: '/vote4fun',
@@ -15,7 +15,7 @@ const router = createRouter({
       children: [],
     },
     {
-      path: '/vote4fun/vote_detail',
+      path: '/vote4fun/vote_detail/:rankListId',
       name: 'vote4fun_vote_detail',
       component: () => import('@/views/VoteDetail.vue'),
     },
