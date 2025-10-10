@@ -2,11 +2,14 @@
 import {useDark, useToggle} from "@vueuse/core";
 import {Moon, Sunny} from '@element-plus/icons-vue'
 import Login from "@/components/CommonLogin.vue";
+import router from '@/router/router.ts'
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 
-
+function gotoVOTE() {
+  router.push('/vote4fun')
+}
 </script>
 
 <template>
@@ -16,7 +19,7 @@ const toggleDark = useToggle(isDark);
   >
 
     <el-menu-item index="1">博客</el-menu-item>
-    <el-menu-item index="2">
+    <el-menu-item index="2" @click="gotoVOTE">
       VOTE
     </el-menu-item>
 

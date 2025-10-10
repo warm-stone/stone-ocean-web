@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import('@/views/VoteDetail.vue'),
     },
     {
+      path: '/vote4fun/publish',
+      name: 'vote4fun_publish',
+      component: () => import('@/views/PublishPost.vue'),
+    },
+    {
       path: '/biographic-note/:id',
       name: '简历',
       component: () => import('@/views/BiographicalNote.vue'),

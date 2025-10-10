@@ -36,12 +36,20 @@ onMounted(() => {
 function gotoVoteDetail(rankListItem: RankList) {
   router.push(`/vote4fun/vote_detail/${rankListItem.id}`)
 }
+
+function postArticles() {
+  router.push(`/vote4fun/publish`)
+}
 </script>
 
 <template>
   <div class="ranklist">
+    <div class="ranklist-header">
+      <el-button type="primary" size="default" @click="postArticles"> 发布 </el-button>
+    </div>
     <div class="ranklist-main">
       <rank-list-component
+        class="ranklist-item"
         v-for="rankItem in rankList.records"
         :key="rankItem.id"
         :rank-list="rankItem"
@@ -62,10 +70,20 @@ function gotoVoteDetail(rankListItem: RankList) {
 </template>
 
 <style scoped>
+.ranklist-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
 .ranklist {
   margin-top: 20px;
   margin-left: 20%;
   margin-right: 20%;
+}
+
+.ranklist-item {
+  margin: 3px;
 }
 
 .ranklist-main {

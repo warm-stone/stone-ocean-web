@@ -26,7 +26,7 @@ onMounted(async () => {
   if (!props.rankList.coverUrl) {
     return
   }
-  const imgUrl = `${backendUrl}${props.rankList.coverUrl}`
+  const imgUrl = `${backendUrl}/file/load/${props.rankList.coverUrl}`
   const blob = await getAuthImageBlob(imgUrl)
   if (blob) {
     // 将 blob 转为本地可访问的 object URL
@@ -84,7 +84,9 @@ onUnmounted(() => {
   padding: 12px;
   border: 1px solid #eee;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .dark-mode {
@@ -92,6 +94,7 @@ onUnmounted(() => {
 }
 
 .post-item:hover {
+  transform: translateY(-5px);
   box-shadow: 0 2px 8px #c8c8c8;
 }
 
