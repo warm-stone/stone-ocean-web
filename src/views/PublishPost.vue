@@ -292,6 +292,7 @@ const handleReset = () => {
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: gray;
 }
 
 
