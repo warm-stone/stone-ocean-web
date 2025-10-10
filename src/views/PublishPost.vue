@@ -85,7 +85,7 @@
           <el-button type="primary" @click="handleSubmit" :loading="isSubmitting">
             发布帖子
           </el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleReset">返回</el-button>
         </el-form-item>
       </el-form>
     </div>
