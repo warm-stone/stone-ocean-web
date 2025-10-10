@@ -27,7 +27,7 @@
                 @click.stop.once="voteToMember(member.id, -1, member)"
                 style="max-width: 60px"
               >
-                <template v-if="rankList.agreeName">
+                <template v-if="rankList.disagreeName">
                   {{ rankList.disagreeName }}
                 </template>
                 <template v-else> 踩 </template>

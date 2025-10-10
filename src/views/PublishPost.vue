@@ -41,17 +41,19 @@
           <el-upload
             list-type="picture-card"
             class="avatar-uploader"
+            :limit="1"
             :action="uploadAction"
             :headers="uploadHeaders"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
             :on-error="handleUploadError"
+            :on-exceed="handleExceed"
           >
             <div class="upload-placeholder">
               <el-icon class="upload-icon">
                 <Plus />
               </el-icon>
-              <div class="upload-text">点击上传封面图片 <br />支持JPG、PNG格式</div>
+              <div class="upload-text">点击上传封面图片 <br />支持JPG、PNG、SVG格式</div>
             </div>
           </el-upload>
         </el-form-item>
@@ -161,12 +163,15 @@ const handleUploadError = (err: any) => { // eslint-disable-line @typescript-esl
     ElMessage.error('上传失败，请稍后重试')
   }
 }
+const handleExceed = () => {
 
+  ElMessage.error('只允许一张图片')
+}
 // 图片上传前验证
 const beforeAvatarUpload = (rawFile: File) => {
-  const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png'
+  const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png'|| rawFile.type === 'image/svg+xml'
   if (!isJpgOrPng) {
-    ElMessage.error('只能上传JPG/PNG格式的图片')
+    ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
     return false
   }
 
@@ -205,18 +210,16 @@ const handleSubmit = async () => {
       })
 
       ElMessage.success('帖子发布成功！')
-      handleReset()
+      router.back()
     }
   } catch (error) {
     console.error('提交失败:', error)
-  } finally {
-    isSubmitting.value = false
   }
 }
 
 // 重置表单
 const handleReset = () => {
-  router.push('/vote4fun')
+  router.back()
 }
 </script>
 
