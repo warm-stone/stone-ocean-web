@@ -31,9 +31,15 @@ const router = createRouter({
     },
     {
       path: '/login/oauth2/code/:registrationId',
-      name: 'oauth2 授权信息传递',
+      name: 'login_oauth2_code',
       // component: OAuth2Login
       component: () => import('@/views/OAuth2Login.vue'),
+    },
+    {
+      path: '/user/register',
+      name: 'user_register',
+      // component: OAuth2Login
+      component: () => import('@/views/UserRegister.vue'),
     },
   ],
 })

@@ -24,7 +24,6 @@ async function getToken() {
     }
   })
   const token = response.data.data.token
-  console.log(token)
   storeToken(token)
 
   window.location.href = window.location.origin
@@ -39,9 +38,6 @@ onMounted(async () => {
 })
 </script>
 
-<template>
-
-</template>
 
 <style scoped>
 

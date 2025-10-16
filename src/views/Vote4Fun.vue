@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getToken } from '@/utils/auth.ts'
 import axios from 'axios'
 import RankListComponent from '@/components/RankListComponent.vue'
 import type { PageResult, RankList } from '@/utils/interfaces.ts'
@@ -17,14 +16,9 @@ const page = ref(1)
 const size = ref(5)
 
 async function getRankList() {
-  const token = getToken()
   const response = await axios.get(
     `${backendUrl}/rankList/page?page=${page.value}&size=${size.value}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
+
   )
   rankList.value = response.data.data
 }

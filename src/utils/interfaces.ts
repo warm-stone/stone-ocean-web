@@ -50,3 +50,7 @@ export interface ApiResult<T> {
   message: string,
   data: T
 }
+
+export interface Authorization {
+  token: string
+}

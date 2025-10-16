@@ -169,7 +169,7 @@ const handleExceed = () => {
 }
 // 图片上传前验证
 const beforeAvatarUpload = (rawFile: File) => {
-  const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png'|| rawFile.type === 'image/svg+xml'
+  const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png' || rawFile.type === 'image/svg+xml'
   if (!isJpgOrPng) {
     ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
     return false
