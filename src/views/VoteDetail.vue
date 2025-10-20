@@ -1,42 +1,27 @@
 <script setup lang="ts">
 import VoteComponent from '@/components/VoteComponent.vue'
-import type { RankList, RankMember } from '@/utils/interfaces.ts'
-import axios from 'axios'
-import { getToken } from '@/utils/auth.ts'
+import type { ApiResult, RankList, RankMember } from '@/utils/interfaces.ts'
 
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-
-const baseUrl = import.meta.env.VITE_BASE_URL
-const token = getToken()
+import { API_URLS, get, post } from '@/utils/network.ts'
 
 const rankList = ref<RankList>({} as RankList)
 const rankMember = ref<RankMember[]>([])
 onMounted(async () => {
-
   const route = useRoute()
   await reqRankList(Number(route.params.rankListId))
   await reqRankMember(Number(route.params.rankListId))
 })
 
 async function reqRankList(id: string | number) {
-  const response = await axios.get(`${baseUrl}/rankList/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  const data = response.data.data
-  rankList.value = data
+  const response = await get<ApiResult<RankList>>(API_URLS.rankList.member(id))
+  rankList.value = response.data
 }
 
 async function reqRankMember(id: string | number) {
-  const response = await axios.get(`${baseUrl}/rankMember/member/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  const data = response.data.data
-  rankMember.value = data
+  const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.memberById(id))
+  rankMember.value = response.data
 }
 
 // endregion
@@ -45,8 +30,7 @@ async function reqRankMember(id: string | number) {
 const dialogFlag = ref(false)
 const dialogInfo = ref<RankMember>({} as RankMember)
 
-const newRankMember = ref<RankMember>({
-} as RankMember)
+const newRankMember = ref<RankMember>({} as RankMember)
 console.log(newRankMember)
 
 function showAddDialog() {
@@ -57,11 +41,7 @@ async function addMember() {
   dialogFlag.value = false
   newRankMember.value.rankListId = rankList.value.id
   newRankMember.value.parentId = dialogInfo.value.id
-  await axios.post(`${baseUrl}/rankMember/add`, newRankMember.value, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  await post<ApiResult<boolean>>(API_URLS.rankMember.add, newRankMember.value)
 
   await reqRankMember(rankList.value.id)
 }

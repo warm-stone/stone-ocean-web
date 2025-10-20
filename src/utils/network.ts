@@ -1,6 +1,7 @@
 // api/client.ts
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { getToken, removeToken } from '@/utils/auth.ts'
+import { ElMessage } from 'element-plus'
 
 // 1. 集中管理可请求的URL（基础URL + 接口路径）
 export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -11,17 +12,35 @@ export const API_URLS = {
     lode: (img: string) => `/file/load/${img}`,
     upload: '/file/upload',
   },
+  oauth2Login: {
+    code: (registrationId: string) => `/oauth2Login/${registrationId}/code`,
+    register: (registrationId: string) => `/oauth2Login/${registrationId}/register`
+  },
   user: {
     add: '/user/add',
-    self_info: '/user/self_info',
+    self_info: '/user/selfInfo',
     login: '/user/login',
+  },
+  rankList: {
+    member: (id: string | number) => `/rankList/member/${id}`,
+    add: '/rankList/add',
+    page: '/rankList/page',
+  },
+  rankMember: {
+    add: '/rankMember/add',
+    memberById: (id: string | number) => `/rankMember/member/${id}`,
+    subMemberById: (id: string | number) => `/rankMember/subMember/${id}`,
+  },
+  vote: {
+    statistics: (rankMemberId: string | number) => `/voteRecord/statistic/rankMemberId/${rankMemberId}`,
+    vote: '/voteRecord/vote'
   }
 };
 
 // 创建axios实例
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // 超时时间
+  timeout: 30000, // 超时时间
   headers: {
     'Content-Type': 'application/json',
   },
@@ -32,7 +51,14 @@ const apiClient = axios.create({
 // 请求拦截器：添加token
 apiClient.interceptors.request.use(
   (config) => {
-    if (getToken()) {
+    let authFlag: boolean = false
+    if ('userAuth' in config) {
+      authFlag = config.userAuth as boolean
+    }
+    else {
+      authFlag = config.method == 'post'
+    }
+    if (authFlag && getToken()) {
       config.headers.Authorization = `Bearer ${getToken()}`;
     }
     return config;
@@ -75,6 +101,7 @@ apiClient.interceptors.response.use(
 
     // 输出错误信息（可替换为UI提示，如Toast）
     console.error('[API Error]', errorMessage, error);
+    ElMessage.error(errorMessage)
     return Promise.reject(new Error(errorMessage));
   }
 );
@@ -102,7 +129,7 @@ export const get = async <T = unknown>(
 export const post = async <T = unknown>(
   url: string,
   data?: unknown,
-  config?: AxiosRequestConfig
+  config?: Record< string | number | symbol, object | boolean | string>
 ): Promise<T> => {
   const response: AxiosResponse<T> = await apiClient.post(url, data, config);
   return response.data;

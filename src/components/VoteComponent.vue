@@ -3,7 +3,7 @@
     <el-collapse @change="handleCollapseChange" expand-icon-position="left">
       <el-collapse-item :name="member.id" v-for="member in sortedRankMembers" :key="member.id">
         <template #title>
-          <el-row style="margin-left: 0; margin-right: 0" :gutter="20">
+          <el-row :gutter="16">
             <el-col :span="8">
               <el-text size="large">{{ member.name }}</el-text>
             </el-col>
@@ -53,7 +53,7 @@
                 style="border-radius: 0"
                 shadow="hover"
                 v-for="voteRecordSumItem in getVoteRecordSum(member.id)"
-                :key="voteRecordSumItem.id"
+                :key="voteRecordSumItem.creator"
               >
                 {{ voteRecordSumItem }}
               </el-card>
@@ -90,13 +90,17 @@
 <script lang="ts" setup>
 import { type PropType, ref, computed } from 'vue'
 
-import axios from 'axios'
-import { getToken } from '@/utils/auth.ts'
-import type { RankMember, RankList, VoteRecord } from '@/utils/interfaces.ts'
+import type {
+  RankMember,
+  RankList,
+  VoteRecord,
+  ApiResult,
+  VoteRecordSumDTO
+} from '@/utils/interfaces.ts'
 import type { TabsPaneContext } from 'element-plus'
+import { API_URLS, get, post } from '@/utils/network.ts'
 
 const baseUrl = import.meta.env.VITE_BASE_URL
-const token = getToken()
 
 const props = defineProps({
   rankMembers: {
@@ -131,13 +135,8 @@ async function handleCollapseChange(ids: string[], refresh = false) {
     if (subMembers.value[id] && !refresh) {
       continue
     }
-    const response = await axios.get(`${baseUrl}/rankMember/subMember/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    const data = response.data.data
-    subMembers.value[id] = data
+    const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.subMemberById(id))
+    subMembers.value[id] = response.data
   }
 }
 
@@ -152,18 +151,14 @@ async function voteToMember(id: number | string, voteCount: number, member: Rank
     rankMemberId: id,
     voteCount: voteCount,
   } as VoteRecord
-  await axios.post(`${baseUrl}/voteRecord/vote`, voteData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
 }
 
 // endregion
 
 // region 请求投票记录
 
-const voteRecordSumInfo = ref<Record<string, VoteRecord[]>>({})
+const voteRecordSumInfo = ref<Record<string, VoteRecordSumDTO[]>>({})
 
 const getVoteRecordSum = (id: number | string) => {
   return voteRecordSumInfo.value[String(id)] || []
@@ -176,13 +171,8 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   if (voteRecordSumInfo.value[id] && !refresh) {
     return
   }
-  const response = await axios.get(`${baseUrl}/voteRecord/statistic/rankMemberId/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  const data = response.data.data
-  voteRecordSumInfo.value[id] = data
+  const response = await get<ApiResult<VoteRecordSumDTO[]>>(API_URLS.vote.statistics(id))
+  voteRecordSumInfo.value[id] = response.data
 }
 
 // endregion
@@ -205,11 +195,7 @@ function showAddDialog(member: RankMember) {
 async function addMember() {
   dialogFlag.value = false
   newRankMember.value.parentId = dialogInfo.value.id
-  await axios.post(`${baseUrl}/rankMember/add`, newRankMember.value, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  await post(`${baseUrl}/rankMember/add`, newRankMember.value)
   await handleCollapseChange([dialogInfo.value.id.toString()], true)
 }
 

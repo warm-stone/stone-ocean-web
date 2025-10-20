@@ -54,3 +54,8 @@ export interface ApiResult<T> {
 export interface Authorization {
   token: string
 }
+
+export interface VoteRecordSumDTO {
+  creator:number,
+  voteCount: number
+}
