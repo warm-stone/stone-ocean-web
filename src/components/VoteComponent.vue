@@ -342,7 +342,7 @@ const registerRules = reactive({
 }
 
 /* 响应式处理：空间不足时（如手机屏幕）自动换行 */
-@media (max-width: 640px) {
+@media (max-width: 960px) {
   /* 换行后按钮组居右，文本占满宽度 */
   .button-group {
     width: 100%;

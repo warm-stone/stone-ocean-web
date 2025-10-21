@@ -76,6 +76,15 @@ function postArticles() {
   margin-right: 20%;
 }
 
+/* 响应式处理：空间不足时（如手机屏幕）自动换行 */
+@media (max-width: 960px) {
+  /* 换行后按钮组居右，文本占满宽度 */
+  .ranklist {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+}
 .ranklist-item {
   margin: 3px;
 }
