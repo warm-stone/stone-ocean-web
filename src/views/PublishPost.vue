@@ -104,7 +104,6 @@ import { getToken } from '@/utils/auth.ts'
 import router from '@/router/router.ts'
 
 const backendUrl = import.meta.env.VITE_BASE_URL
-const token = getToken()
 
 // 表单引用
 const postFormRef = ref<InstanceType<typeof ElForm>>()
@@ -112,12 +111,12 @@ const postFormRef = ref<InstanceType<typeof ElForm>>()
 // 提交状态
 const isSubmitting = ref(false)
 
-// 实际图片上传接口地址（替换为你的后端接口）
+// 实际图片上传接口地址
 const uploadAction = `${backendUrl}/file/upload`
 
 // 2. 上传请求头（自动携带Bearer token）
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${token}`, // 核心：添加认证头
+  Authorization: `Bearer ${getToken()}`, // 核心：添加认证头
 }))
 
 // 表单数据
@@ -139,10 +138,10 @@ const rules = {
     { required: false, message: '请输入帖子描述', trigger: 'blur' },
     { min: 0, max: 100, message: '描述长度在 0 到 100 个字符', trigger: 'blur' },
   ],
-  coverUrl: [{ required: true, message: '请上传封面图片', trigger: 'change' }],
+  coverUrl: [{ required: false, message: '请上传封面图片', trigger: 'change' }],
 }
 
-// 图片上传成功处理（根据后端实际返回结构调整）
+// 图片上传成功处理
 const handleAvatarSuccess = (response: ApiResult<string>) => {
   // 示例：假设后端返回 { code: 200, data: { url: 'https://xxx.com/image.jpg' } }
   if (response.statusCode === 200 && response.data) {
@@ -182,7 +181,7 @@ const beforeAvatarUpload = (rawFile: File) => {
   }
 
   // 检查token是否存在
-  if (!token) {
+  if (!getToken()) {
     ElMessage.error('请先登录')
     return false
   }
@@ -204,9 +203,9 @@ const handleSubmit = async () => {
         ...postForm,
       }
 
-      // 调用帖子发布接口（同样需要携带token）
+      // 调用帖子发布接口
       await axios.post(`${backendUrl}/rankList/add`, postData, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
       })
 
       ElMessage.success('帖子发布成功！')

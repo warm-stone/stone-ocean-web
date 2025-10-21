@@ -125,6 +125,7 @@ import { useRouter } from 'vue-router'
 import { API_BASE_URL, API_URLS, post } from '@/utils/network.ts'
 import type { ApiResult, Authorization } from '@/utils/interfaces.ts'
 import { storeToken } from '@/utils/auth.ts'
+import { beforeAvatarUpload } from '@/utils/img.ts'
 // 表单引用
 const registerFormRef = ref()
 
@@ -209,22 +210,7 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-// 头像上传前验证
-const beforeAvatarUpload = (file: File) => {
-  const isJpgOrPng =
-    file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/svg+xml'
-  const isLt1M = file.size / 1024 / 1024 < 1
 
-  if (!isJpgOrPng) {
-    ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
-    return false
-  }
-  if (!isLt1M) {
-    ElMessage.error('图片大小不能超过1MB')
-    return false
-  }
-  return true
-}
 
 // 提交表单
 const handleSubmit = async () => {
