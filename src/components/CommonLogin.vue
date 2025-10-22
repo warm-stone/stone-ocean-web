@@ -28,8 +28,8 @@ import { reactive, ref } from 'vue'
 import axios from 'axios'
 import { type ElForm, ElMessage } from 'element-plus'
 import { API_URLS, post } from '@/utils/network.ts'
-import type { ApiResult, Authorization } from '@/utils/interfaces.ts'
-import { storeToken } from '@/utils/auth.ts'
+import type { ApiResult, AuthorizationDTO } from '@/utils/interfaces.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 // 路由实例
 const baseUrl = import.meta.env.VITE_BASE_URL
@@ -102,15 +102,16 @@ async function login() {
   userAccount.value.validate()
   const authString = `${form.account}:${form.passwordHash}`;
   // 发送登录请求
-  const response = await post<ApiResult<Authorization>>(API_URLS.user.login, {}, {headers: {
+  const response = await post<ApiResult<AuthorizationDTO>>(API_URLS.user.login, {}, {headers: {
       Authorization: `Basic ${stringToBase64(authString)}`,
 
       'Content-Type': 'application/json'
     }})
 
-  const token = response.data.token
-  console.log(token)
-  storeToken(token)
+  const {token, user} = response.data
+
+  const userStore =  useSelfStore()
+  userStore.setUserInfo(user, token)
 
   // 注册成功处理
   ElMessage.success('登录成功')

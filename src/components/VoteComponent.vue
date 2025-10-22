@@ -143,7 +143,7 @@ import { ElMessage, ElUpload, type TabsPaneContext } from 'element-plus'
 import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
 import { beforeAvatarUpload } from '@/utils/img.ts'
 import { Plus } from '@element-plus/icons-vue'
-import { getToken } from '@/utils/auth.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 
 const props = defineProps({
@@ -246,13 +246,14 @@ async function addMember() {
 // endregion
 
 
+const userStore = useSelfStore()
 // region 图片上传
 // 实际图片上传接口地址
 const uploadAction = API_BASE_URL + API_URLS.file.upload
 
 // 2. 上传请求头（自动携带Bearer token）
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${getToken()}`, // 核心：添加认证头
+  Authorization: `Bearer ${userStore.token}`, // 核心：添加认证头
 }))
 
 // 处理头像上传成功

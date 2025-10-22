@@ -99,10 +99,11 @@ import { computed, reactive, ref } from 'vue'
 import { ElForm, ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { ApiResult, RankList } from '@/utils/interfaces.ts'
-import axios from 'axios'
-import { getToken } from '@/utils/auth.ts'
 import router from '@/router/router.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
+import { API_URLS, post } from '@/utils/network.ts'
 
+const userStore = useSelfStore()
 const backendUrl = import.meta.env.VITE_BASE_URL
 
 // 表单引用
@@ -116,7 +117,7 @@ const uploadAction = `${backendUrl}/file/upload`
 
 // 2. 上传请求头（自动携带Bearer token）
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${getToken()}`, // 核心：添加认证头
+  Authorization: `Bearer ${userStore.token}`, // 核心：添加认证头
 }))
 
 // 表单数据
@@ -181,7 +182,7 @@ const beforeAvatarUpload = (rawFile: File) => {
   }
 
   // 检查token是否存在
-  if (!getToken()) {
+  if (!userStore.token) {
     ElMessage.error('请先登录')
     return false
   }
@@ -204,9 +205,7 @@ const handleSubmit = async () => {
       }
 
       // 调用帖子发布接口
-      await axios.post(`${backendUrl}/rankList/add`, postData, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
+      await post(API_URLS.rankList.add, postData)
 
       ElMessage.success('帖子发布成功！')
       router.back()

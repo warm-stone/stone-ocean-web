@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { storeToken } from '@/utils/auth.ts'
 import { API_URLS, post } from '@/utils/network.ts'
-import type { ApiResult } from '@/utils/interfaces.ts'
+import type { ApiResult, AuthorizationDTO } from '@/utils/interfaces.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 // 获取当前的路由对象
 const route = useRoute()
@@ -15,7 +15,7 @@ async function getToken() {
   const p = route.query
 
   const registrationId = route.params.registrationId as string
-  const response = await post<ApiResult<string>>(
+  const response = await post<ApiResult<AuthorizationDTO>>(
     API_URLS.oauth2Login.register(registrationId),
     p.code,
     {
@@ -25,8 +25,9 @@ async function getToken() {
       userAuth: false,
     },
   )
-  const token = response.data
-  storeToken(token)
+  const {token, user} = response.data
+  const userStore =  useSelfStore()
+  userStore.setUserInfo(user, token)
 
   window.location.href = window.location.origin
 }

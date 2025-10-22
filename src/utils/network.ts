@@ -1,7 +1,8 @@
 // api/client.ts
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
-import { getToken, removeToken } from '@/utils/auth.ts'
 import { ElMessage } from 'element-plus'
+import { useSelfStore } from '@/utils/piniaCache.ts'
+
 
 // 1. 集中管理可请求的URL（基础URL + 接口路径）
 export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -51,15 +52,15 @@ const apiClient = axios.create({
 // 请求拦截器：添加token
 apiClient.interceptors.request.use(
   (config) => {
-    let authFlag: boolean = false
+    let authFlag: boolean
     if ('userAuth' in config) {
       authFlag = config.userAuth as boolean
     }
     else {
       authFlag = config.method == 'post'
     }
-    if (authFlag && getToken()) {
-      config.headers.Authorization = `Bearer ${getToken()}`;
+    if (authFlag && useSelfStore().token) {
+      config.headers.Authorization = `Bearer ${useSelfStore().token}`;
     }
     return config;
   },
@@ -68,7 +69,13 @@ apiClient.interceptors.request.use(
 
 // 3. 基础错误处理（响应拦截器）
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.data.statusCode != 200) {
+      ElMessage.error(response.data.message);
+      throw response;
+    }
+    return response
+  },
   (error: AxiosError) => {
     // 4. 错误提示
     let errorMessage = '请求失败，请稍后重试';
@@ -79,7 +86,8 @@ apiClient.interceptors.response.use(
       switch (status) {
         case 401:
           errorMessage = '登录已过期，请重新登录';
-          removeToken(); // 清除无效token
+          // 清除无效token
+          useSelfStore().clearUserInfo()
           // 可添加跳转登录页逻辑：window.location.href = '/login'
           break;
         case 403:

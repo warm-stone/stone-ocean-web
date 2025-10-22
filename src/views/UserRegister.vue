@@ -123,9 +123,9 @@ import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { API_BASE_URL, API_URLS, post } from '@/utils/network.ts'
-import type { ApiResult, Authorization } from '@/utils/interfaces.ts'
-import { storeToken } from '@/utils/auth.ts'
+import type { ApiResult, AuthorizationDTO } from '@/utils/interfaces.ts'
 import { beforeAvatarUpload } from '@/utils/img.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 // 表单引用
 const registerFormRef = ref()
 
@@ -210,16 +210,13 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-
-
 // 提交表单
 const handleSubmit = async () => {
   if (!registerFormRef.value) return
+  // 表单验证
+  await registerFormRef.value.validate()
 
   try {
-    // 表单验证
-    await registerFormRef.value.validate()
-
     // 准备提交数据（转换为后端需要的格式）
     const submitData = {
       account: registerForm.account,
@@ -236,23 +233,15 @@ const handleSubmit = async () => {
     submitLoading.value = true
 
     // 发送注册请求
-    const response = await post<ApiResult<Authorization>>(API_URLS.user.add, submitData)
+    const response = await post<ApiResult<AuthorizationDTO>>(API_URLS.user.add, submitData)
 
-    const token = response.data.token
-    storeToken(token)
+    const {token, user} = response.data
+    const userStore =  useSelfStore()
+    userStore.setUserInfo(user, token)
 
     // 注册成功处理
     ElMessage.success('注册成功，请登录')
     await router.push('/')
-  } catch (
-    error: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  ) {
-    // 处理错误
-    if (error instanceof Error) {
-      ElMessage.error(error.message)
-    } else {
-      ElMessage.error('注册失败，请稍后重试')
-    }
   } finally {
     // 隐藏加载状态
     submitLoading.value = false

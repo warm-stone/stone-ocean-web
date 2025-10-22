@@ -3,7 +3,7 @@ import {Calendar, Iphone, Location, School, Tickets, User} from '@element-plus/i
 import {onMounted, ref} from 'vue'
 import {useRoute} from 'vue-router'
 import axios from 'axios'
-import {getToken} from "@/utils/auth.ts";
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 const backendUrl = import.meta.env.VITE_BASE_URL
 const route = useRoute()
@@ -26,7 +26,7 @@ const experiences = ref([
 ])
 
 const fetchData = async () => {
-  const token = getToken()
+  const token = useSelfStore().token
   const response = await axios.get(`${backendUrl}/biographic/get/${route.params.id}`, {
     headers: {
       Authorization: `Bearer ${token}`,

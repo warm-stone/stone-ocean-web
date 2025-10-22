@@ -7,19 +7,19 @@ import App from './App.vue'
 import router from './router/router.ts'
 import ElementPlus from 'element-plus'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate' // 导入插件
 
 const app = createApp(App)
 
 const pinia = createPinia()
-app.use(pinia)
-
-app.use(router)
-app.use(
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia).use(router).use(
   ElementPlus,
   // window.ElementPlus,
   {
     // locale: zhCn,
     size: 'small',
-    zIndex: 3000
-  }) // 使用中文语言包（可选）
+    zIndex: 3000,
+  },
+) // 使用中文语言包（可选）
 app.mount('#app')

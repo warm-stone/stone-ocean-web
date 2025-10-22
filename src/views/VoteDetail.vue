@@ -7,8 +7,8 @@ import { useRoute } from 'vue-router'
 import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { getToken } from '@/utils/auth.ts'
 import { beforeAvatarUpload } from '@/utils/img.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 const rankList = ref<RankList>({} as RankList)
 const rankMember = ref<RankMember[]>([])
@@ -76,7 +76,7 @@ const uploadAction = API_BASE_URL + API_URLS.file.upload
 
 // 2. 上传请求头（自动携带Bearer token）
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${getToken()}`, // 核心：添加认证头
+  Authorization: `Bearer ${useSelfStore().token}`, // 核心：添加认证头
 }))
 
 // 处理头像上传成功

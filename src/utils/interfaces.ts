@@ -1,3 +1,18 @@
+export interface User {
+  id?: number;
+  account: string;
+  passwordHash: string;
+  email?: string;
+  phone?: string;
+  nickname: string;
+  sex?: string;
+  des?: string;
+  avatarUrl?: string;
+  createdTime?: Date;
+  updatedTime?: Date;
+  deletedTime?: Date | null;
+}
+
 export interface RankMember {
   id: number
   rankListId: number
@@ -51,8 +66,9 @@ export interface ApiResult<T> {
   data: T
 }
 
-export interface Authorization {
+export interface AuthorizationDTO {
   token: string
+  user: User
 }
 
 export interface VoteRecordSumDTO {
