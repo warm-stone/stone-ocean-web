@@ -36,10 +36,29 @@ export const useSelfStore = defineStore(StoreId.SelfInfo, {
   persist: true,
 })
 
-export const useUserCacheStore = () => defineStore(StoreId.UsersCache, {
-  state: () => ({}),
-  getters: {},
+export const useUserCacheStore = defineStore(StoreId.UsersCache, {
+  state: () => ({
+    userRecord: {  } as Record<number, User> ,
+  }),
+  getters: {
+    getByUserId(): (userId: number) => User | undefined {
+      // 使用箭头函数确保 this 指向正确
+      return (userId: number) => this.userRecord[userId]
+    },
+  },
   actions: {
+    // 新增/更新用户
+    setUser(userId: number, user: User) {
+      this.userRecord[userId] = user
+    },
+    // 删除单个用户
+    removeUser(userId: number) {
+      delete this.userRecord[userId]
+    },
+    // 清空所有缓存
+    clearAll() {
+      this.userRecord = {}
+    }
   },
   persist: {
     storage: sessionStorage,

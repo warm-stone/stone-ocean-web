@@ -1,6 +1,7 @@
 // src/utils/requestImg.js
 import axios from 'axios';
 import { ElMessage } from 'element-plus'
+import { useSelfStore } from '@/utils/piniaCache.ts'
 
 // 用 axios 发送带 Token 的请求获取图片 blob
 export const getAuthImageBlob = async (imgUrl: string) => {
@@ -19,7 +20,17 @@ export const getAuthImageBlob = async (imgUrl: string) => {
   }
 };
 
-
+// 图片上传错误处理
+export const handleUploadError = (err: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+                                          // 常见错误：token过期/无效
+  if (err.status === 401) {
+    useSelfStore().clearUserInfo()
+    ElMessage.error('认证失败，请重新登录')
+    // 可在此处添加跳转登录页逻辑
+  } else {
+    ElMessage.error('上传失败，请稍后重试')
+  }
+}
 export const beforeAvatarUpload = (file: File) => {
   const isJpgOrPng =
     file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/svg+xml'

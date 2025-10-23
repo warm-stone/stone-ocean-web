@@ -182,7 +182,12 @@ const registerRules = reactive({
   ],
   nickname: [
     { required: true, message: '请输入显示名称', trigger: 'blur' },
-    { min: 2, max: 20, message: '显示名称长度在 2 到 20 个字符', trigger: 'blur' },
+    {
+      pattern: /^[a-zA-Z1-9\u4e00-\u9fa5_]+$/,
+      message: '仅允许大小写字母、数字、中文字符、 _',
+      trigger: 'blur',
+    },
+    { min: 2, max: 10, message: '昵称长度在 2 到 20 个字符', trigger: 'blur' },
   ],
   email: [
     {

@@ -4,6 +4,9 @@ import { ElMessage } from 'element-plus'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 
 
+export const API_IMG_URL = (url: string) => {
+  return  API_BASE_URL + API_URLS.file.lode(url)
+}
 // 1. 集中管理可请求的URL（基础URL + 接口路径）
 export const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -21,6 +24,7 @@ export const API_URLS = {
     add: '/user/add',
     self_info: '/user/selfInfo',
     login: '/user/login',
+    member: (userId: string | number) => `/user/member/${userId}`,
   },
   rankList: {
     member: (id: string | number) => `/rankList/member/${id}`,
@@ -29,8 +33,8 @@ export const API_URLS = {
   },
   rankMember: {
     add: '/rankMember/add',
-    memberById: (id: string | number) => `/rankMember/member/${id}`,
-    subMemberById: (id: string | number) => `/rankMember/subMember/${id}`,
+    member: (id: string | number) => `/rankMember/member/${id}`,
+    subMember: (id: string | number) => `/rankMember/subMember/${id}`,
   },
   vote: {
     statistics: (rankMemberId: string | number) => `/voteRecord/statistic/rankMemberId/${rankMemberId}`,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, type PropType, ref } from 'vue'
+import { type PropType } from 'vue'
 import type { RankList } from '@/utils/interfaces.ts'
-import { getAuthImageBlob } from '@/utils/img.ts'
 import { useDark } from '@vueuse/core'
+import { API_IMG_URL } from '@/utils/network.ts'
 
 // 获取暗色模式状态（响应式）
 const isDark = useDark()
@@ -14,42 +14,13 @@ const props = defineProps({
   },
 })
 
-// 原始图片 URL
-// 转换后的本地 URL（用于 el-avatar 的 src）
-const authImgUrl = ref('')
-// 临时 object URL 引用（用于组件卸载时释放）
-let objectUrl = ''
 
-// 组件挂载时请求图片
-onMounted(async () => {
-  const backendUrl = import.meta.env.VITE_BASE_URL
-  if (!props.rankList.coverUrl) {
-    return
-  }
-  const imgUrl = `${backendUrl}/file/load/${props.rankList.coverUrl}`
-  const blob = await getAuthImageBlob(imgUrl)
-  if (blob) {
-    // 将 blob 转为本地可访问的 object URL
-    objectUrl = URL.createObjectURL(blob)
-    authImgUrl.value = objectUrl
-  } else {
-    // 请求失败时使用默认图
-    authImgUrl.value = '/default-avatar.png'
-  }
-})
-
-// 组件卸载时释放 object URL（避免内存泄漏）
-onUnmounted(() => {
-  if (objectUrl) {
-    URL.revokeObjectURL(objectUrl)
-  }
-})
 </script>
 
 <template>
   <div class="post-item" :class="{ 'dark-mode': isDark }">
     <!-- 左侧头像 -->
-    <el-avatar fit="cover" shape="square" class="post-avatar" :src="authImgUrl" />
+    <el-avatar fit="cover" shape="square" class="post-avatar" :src="API_IMG_URL(props.rankList.coverUrl)" />
 
     <!-- 中间内容区：标题 + 描述 + 标签/作者/时间 -->
     <div class="post-content">

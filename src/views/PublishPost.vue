@@ -102,6 +102,7 @@ import type { ApiResult, RankList } from '@/utils/interfaces.ts'
 import router from '@/router/router.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 import { API_URLS, post } from '@/utils/network.ts'
+import { handleUploadError } from '@/utils/img.ts'
 
 const userStore = useSelfStore()
 const backendUrl = import.meta.env.VITE_BASE_URL
@@ -153,16 +154,7 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-// 图片上传错误处理
-const handleUploadError = (err: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-  // 常见错误：token过期/无效
-  if (err.response?.status === 401) {
-    ElMessage.error('认证失败，请重新登录')
-    // 可在此处添加跳转登录页逻辑
-  } else {
-    ElMessage.error('上传失败，请稍后重试')
-  }
-}
+
 const handleExceed = () => {
 
   ElMessage.error('只允许一张图片')

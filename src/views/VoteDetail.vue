@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router'
 import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { beforeAvatarUpload } from '@/utils/img.ts'
+import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 
 const rankList = ref<RankList>({} as RankList)
@@ -24,7 +24,7 @@ async function reqRankList(id: string | number) {
 }
 
 async function reqRankMember(id: string | number) {
-  const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.memberById(id))
+  const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.member(id))
   rankMember.value = response.data
 }
 
@@ -89,10 +89,6 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-// 错误处理
-const handleUploadError = () => {
-  ElMessage.error('头像上传失败：未知错误')
-}
 
 // endregion
 </script>

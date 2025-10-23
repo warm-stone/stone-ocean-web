@@ -64,13 +64,25 @@
             </el-tab-pane>
             <el-tab-pane label="投票记录" name="voteRecord">
               <el-scrollbar max-height="400px">
-                <el-card
-                  shadow="hover"
+                <div
+                  class="vote-record-container"
                   v-for="voteRecordSumItem in getVoteRecordSum(member.id)"
                   :key="voteRecordSumItem.creator"
                 >
-                  {{ voteRecordSumItem }}
-                </el-card>
+                  <el-avatar class="vote-record-avatar" :src="avatarUrlCache[voteRecordSumItem.creator]" size="small" />
+<!--                  {{ voteRecordSumItem }}-->
+                  <!-- 2. 中间大段文本：占据图片到气泡之间的所有空间，允许换行 -->
+                  <div class="vote-record-nickname">
+                    <el-text size="default" type="info" >{{ userCacheStore.getByUserId(voteRecordSumItem.creator)?.nickname }}</el-text>
+                    <!-- 大段文本 -->
+                  </div>
+
+                  <!-- 3. 票数气泡：紧挨着文本右侧，视觉突出 -->
+                  <div class="vote-record-count">
+                    {{ voteRecordSumItem.voteCount }}
+                  </div>
+
+                </div>
               </el-scrollbar>
             </el-tab-pane>
             <el-tab-pane label="描述" name="desc">
@@ -98,7 +110,6 @@
           list-type="picture-card"
           class="avatar-uploader"
           :limit="1"
-
           :action="uploadAction"
           :headers="uploadHeaders"
           :on-success="handleAvatarSuccess"
@@ -130,21 +141,24 @@
 </template>
 
 <script lang="ts" setup>
-import { type PropType, ref, computed, reactive } from 'vue'
+import { computed, type PropType, reactive, ref } from 'vue'
 
 import type {
-  RankMember,
-  RankList,
-  VoteRecord,
   ApiResult,
+  RankList,
+  RankMember,
+  User,
+  VoteRecord,
   VoteRecordSumDTO,
 } from '@/utils/interfaces.ts'
 import { ElMessage, ElUpload, type TabsPaneContext } from 'element-plus'
-import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
-import { beforeAvatarUpload } from '@/utils/img.ts'
+import { API_BASE_URL, API_IMG_URL, API_URLS, get, post } from '@/utils/network.ts'
+import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
 import { Plus } from '@element-plus/icons-vue'
-import { useSelfStore } from '@/utils/piniaCache.ts'
+import { useSelfStore, useUserCacheStore } from '@/utils/piniaCache.ts'
 
+
+const userCacheStore = useUserCacheStore()
 
 const props = defineProps({
   rankMembers: {
@@ -156,6 +170,29 @@ const props = defineProps({
     required: true,
   },
 })
+
+// 投票记录
+const avatarUrlCache = ref<Record<number | string, string>>({})
+
+const loadAvatarUrl = async (userId: number) => {
+  let userInfo = userCacheStore.getByUserId(userId)
+
+  // 缓存中无用户信息，先请求用户数据
+  if (!userInfo) {
+    const response = await post<ApiResult<User>>(API_URLS.user.member(userId))
+    userInfo = response.data
+    userCacheStore.setUser(userId, userInfo)
+  }
+
+  // 处理头像URL，存入缓存
+  if (!userInfo.avatarUrl) {
+    avatarUrlCache.value[userId] = '' // 无头像时存空字符串
+    return
+  }
+  avatarUrlCache.value[userId] = userInfo.avatarUrl.startsWith('http')
+    ? userInfo.avatarUrl
+    : API_IMG_URL(userInfo.avatarUrl)
+}
 
 const sortedRankMembers = computed(() => {
   // 先检查数据是否存在，避免错误
@@ -179,7 +216,7 @@ async function handleCollapseChange(ids: string[], refresh = false) {
     if (subMembers.value[id] && !refresh) {
       continue
     }
-    const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.subMemberById(id))
+    const response = await get<ApiResult<RankMember[]>>(API_URLS.rankMember.subMember(id))
     subMembers.value[id] = response.data
   }
 }
@@ -189,13 +226,13 @@ async function handleCollapseChange(ids: string[], refresh = false) {
 // region 投票
 
 async function voteToMember(id: number | string, voteCount: number, member: RankMember) {
-  member.scoreSum += voteCount
   dialogFlag.value = false
   const voteData = {
     rankMemberId: id,
     voteCount: voteCount,
   } as VoteRecord
   await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
+  member.scoreSum += voteCount
 }
 
 // endregion
@@ -215,8 +252,14 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   if (voteRecordSumInfo.value[id] && !refresh) {
     return
   }
+  // 投票记录
   const response = await get<ApiResult<VoteRecordSumDTO[]>>(API_URLS.vote.statistics(id))
   voteRecordSumInfo.value[id] = response.data
+  // 加载用户缓存
+  const userIds = response.data.map((item) => item.creator) // 假设 creator 是用户ID
+  for (const userId of userIds) {
+    await loadAvatarUrl(userId) // 循环加载每个用户的头像
+  }
 }
 
 // endregion
@@ -245,7 +288,6 @@ async function addMember() {
 
 // endregion
 
-
 const userStore = useSelfStore()
 // region 图片上传
 // 实际图片上传接口地址
@@ -266,11 +308,6 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-// 错误处理
-const handleUploadError = () => {
-  ElMessage.error('头像上传失败：未知错误')
-}
-
 // endregion
 
 // region 表单校验
@@ -278,12 +315,8 @@ const handleUploadError = () => {
 const registerFormRef = ref()
 // 注册表单验证规则
 const registerRules = reactive({
-  name: [
-    { required: true, message: '请输入内容', trigger: 'blur' },
-  ],
-  coverUrl: [
-    { required: false },
-  ],
+  name: [{ required: true, message: '请输入内容', trigger: 'blur' }],
+  coverUrl: [{ required: false }],
 })
 
 // endregion
@@ -341,6 +374,44 @@ const registerRules = reactive({
   gap: 8px;
   margin-top: 15px; /* 与头像/文本顶部对齐 */
 }
+
+/* 容器核心样式：横向排列，元素顶部对齐，预留内边距 */
+.vote-record-container {
+  display: flex;
+  gap: 16px; /* 元素间间距 */
+  padding: 12px;
+  border-radius: 8px;
+  flex-wrap: wrap; /* 空间不足时自动换行 */
+  flex-direction: row; /* 横向布局（默认值，可省略） */
+  align-items: center; /* 子元素在垂直方向居中对齐 */
+  --el-box-shadow: 'hover';
+}
+
+.vote-record-avatar {
+
+  align-items: center;
+}
+/* 中间大段文本：占据剩余空间，允许换行 */
+.vote-record-nickname {
+  align-items: center;
+  flex: 0.8; /* 填充图片到气泡之间的所有空间 */
+  padding: 4px 0; /* 与头像顶部对齐 */
+}
+
+/* 票数气泡：视觉突出，紧挨着文本右侧 */
+.vote-record-count {
+  background-color: #409eff;
+  color: white;
+  border-radius: 50%;
+  width: 16px; /* 调整为合适尺寸，比如32px */
+  height: 16px; /* 与宽度保持一致 */
+  flex-shrink: 0; /* 关键：禁止Flex布局压缩该元素 */
+  display: flex; /* 可选：让内部文字居中 */
+  align-items: center;
+  justify-content: center;
+  text-size-adjust: auto;
+}
+
 
 /* 响应式处理：空间不足时（如手机屏幕）自动换行 */
 @media (max-width: 960px) {
