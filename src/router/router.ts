@@ -36,7 +36,8 @@ const router = createRouter({
       component: () => import('@/views/OAuth2Login.vue'),
     },
     {
-      path: '/user/register',
+      // value: [register, modify]
+      path: '/user/:behavior' ,
       name: 'user_register',
       // component: OAuth2Login
       component: () => import('@/views/UserRegister.vue'),

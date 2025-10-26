@@ -3,7 +3,10 @@
     <el-card class="register-card" shadow="hover">
       <template v-slot:header>
         <div class="card-header">
-          <h2>用户注册</h2>
+          <h2>
+            <template v-if="behavior == 'modify'"> 用户信息修改</template>
+            <template v-else> 用户注册</template>
+          </h2>
           <p>请填写以下信息完成注册</p>
           <p>用户信息修改过阵子才会上线，请谨慎填写</p>
         </div>
@@ -38,13 +41,13 @@
           </el-upload>
         </el-form-item>
 
-        <!-- 登录账号 -->
-        <el-form-item label="账号" prop="account">
-          <el-input v-model="registerForm.account" placeholder="请输入登录账号" maxlength="20" />
-        </el-form-item>
         <!-- 用户显示名 -->
         <el-form-item label="昵称" prop="nickname">
           <el-input v-model="registerForm.nickname" placeholder="请输入显示名称" maxlength="20" />
+        </el-form-item>
+        <!-- 登录账号 -->
+        <el-form-item label="账号" prop="account">
+          <el-input v-model="registerForm.account" placeholder="请输入登录账号" maxlength="20" />
         </el-form-item>
         <!-- 密码 -->
         <el-form-item label="密码" prop="password">
@@ -106,7 +109,8 @@
         <!-- 提交按钮 -->
         <el-form-item class="form-actions">
           <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
-            注册
+            <template v-if="behavior == 'modify'"> 修改</template>
+            <template v-else> 注册</template>
           </el-button>
           <el-button type="default" @click="handleReset" style="margin-left: 10px">
             重置
@@ -118,12 +122,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { API_BASE_URL, API_URLS, post } from '@/utils/network.ts'
-import type { ApiResult, AuthorizationDTO } from '@/utils/interfaces.ts'
+import type { ApiResult, AuthorizationDTO, User } from '@/utils/interfaces.ts'
 import { beforeAvatarUpload } from '@/utils/img.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 // 表单引用
@@ -135,17 +139,49 @@ const submitLoading = ref(false)
 // 路由实例
 const router = useRouter()
 
+// 路由参数： 行为
+const route = useRoute()
+const behavior = route.params.behavior
+
 // 注册表单数据
-const registerForm = reactive({
-  account: '',
-  password: '',
-  confirmPassword: '',
-  nickname: '',
-  email: '',
-  phone: '',
-  sex: '',
-  des: '',
-  avatarUrl: '',
+interface UserFormData {
+  account: string | null
+  password: string | null
+  confirmPassword: string | null
+  nickname: string | null
+  email: string | null
+  phone: string | null
+  sex: string | null
+  des: string | null
+  avatarUrl: string | null
+}
+
+const registerForm = reactive<UserFormData>({
+  account: null,
+  password: null,
+  confirmPassword: null,
+  nickname: null,
+  email: null,
+  phone: null,
+  sex: null,
+  des: null,
+  avatarUrl: null,
+})
+
+const selfStore = useSelfStore()
+onMounted(async () => {
+  if (behavior == 'modify') {
+    const response = await post<ApiResult<User>>(API_URLS.user.self_info)
+    const user = response.data
+    selfStore.setUser(user)
+    registerForm.account = user.account
+    registerForm.nickname = user.nickname
+    registerForm.email = user.email || null
+    registerForm.phone = user.phone || null
+    registerForm.sex = user.sex || null
+    registerForm.des = user.des || null
+    registerForm.avatarUrl = user.avatarUrl || null
+  }
 })
 
 // 注册表单验证规则
@@ -238,14 +274,16 @@ const handleSubmit = async () => {
     submitLoading.value = true
 
     // 发送注册请求
-    const response = await post<ApiResult<AuthorizationDTO>>(API_URLS.user.add, submitData)
+    const url = behavior == 'modify' ? API_URLS.user.modify : API_URLS.user.add
+    const response = await post<ApiResult<AuthorizationDTO>>(url, submitData)
 
-    const {token, user} = response.data
-    const userStore =  useSelfStore()
+    const { token, user } = response.data
+    const userStore = useSelfStore()
     userStore.setUserInfo(user, token)
 
     // 注册成功处理
-    ElMessage.success('注册成功，请登录')
+    const msg = behavior == 'modify'? '修改成功': '注册成功'
+    ElMessage.success(msg)
     await router.push('/')
   } finally {
     // 隐藏加载状态

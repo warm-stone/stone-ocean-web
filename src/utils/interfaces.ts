@@ -75,3 +75,9 @@ export interface VoteRecordSumDTO {
   creator:number,
   voteCount: number
 }
+
+export interface OAuth2ClientInfo {
+  clientId: string;
+  scopes: string[];
+  authorizationUri: string;
+}

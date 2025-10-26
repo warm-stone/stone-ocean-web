@@ -33,11 +33,11 @@ export const handleUploadError = (err: any) => { // eslint-disable-line @typescr
 }
 export const beforeAvatarUpload = (file: File) => {
   const isJpgOrPng =
-    file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/svg+xml'
+    file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/svg+xml'
   const isLt1M = file.size / 1024 / 1024 < 1
 
   if (!isJpgOrPng) {
-    ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
+    ElMessage.error('只能上传JPG/PNG/SVG/GIF格式的图片')
     return false
   }
   if (!isLt1M) {

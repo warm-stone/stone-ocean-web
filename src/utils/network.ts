@@ -24,6 +24,7 @@ export const API_URLS = {
     add: '/user/add',
     self_info: '/user/selfInfo',
     login: '/user/login',
+    modify: '/user/modify',
     member: (userId: string | number) => `/user/member/${userId}`,
   },
   rankList: {

@@ -1,5 +1,18 @@
 <template>
-  <el-avatar @click="userInfo" :src="avatarUrl"></el-avatar>
+  <el-dropdown @command="handleCommand" size="large" :show-arrow="false" trigger="click">
+    <span class="el-dropdown-link">
+      <el-avatar @click="userInfo" :src="avatarUrl"></el-avatar>
+    </span>
+    <template #dropdown>
+      <el-dropdown-menu>
+        <el-dropdown-item command="settings">设置</el-dropdown-item>
+        <el-dropdown-item divided> {{ selfStore.user?.nickname }}</el-dropdown-item>
+        <el-dropdown-item> {{ selfStore.user?.account }}</el-dropdown-item>
+        <el-dropdown-item> {{ selfStore.user?.sex }}</el-dropdown-item>
+        <el-dropdown-item> {{ selfStore.user?.des }}</el-dropdown-item>
+      </el-dropdown-menu>
+    </template>
+  </el-dropdown>
 
   <el-dialog v-model="dialogFormVisible" title="登录" width="500">
     <el-form ref="userAccount" :model="form" :rules="loginRules" size="large" label-position="top">
@@ -25,14 +38,19 @@
 
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue'
-import axios from 'axios'
 import { type ElForm, ElMessage } from 'element-plus'
-import { API_IMG_URL, API_URLS, post } from '@/utils/network.ts'
-import type { ApiResult, AuthorizationDTO } from '@/utils/interfaces.ts'
+import { API_IMG_URL, API_URLS, get, post } from '@/utils/network.ts'
+import type { ApiResult, AuthorizationDTO, OAuth2ClientInfo } from '@/utils/interfaces.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 
 // 路由实例
-const baseUrl = import.meta.env.VITE_BASE_URL
+
+// 个人信息框命令回调
+const handleCommand = (command: string) => {
+  if (command == 'settings') {
+    window.location.href = '/user/modify'
+  }
+}
 
 // 头像
 const avatarUrl = computed(() => {
@@ -52,9 +70,9 @@ const loginRules = reactive({
 const dialogFormVisible = ref(false)
 
 async function getCode() {
-  const clientInfo_p = await axios.get(baseUrl + '/oauth2Login/github/code')
+  const clientInfo_p = await get<ApiResult<OAuth2ClientInfo>>( API_URLS.oauth2Login.code('github'))
   console.log(clientInfo_p)
-  const clientInfo = clientInfo_p.data.data
+  const clientInfo = clientInfo_p.data
 
   console.log('成功获取 code:', clientInfo)
 
@@ -75,12 +93,10 @@ async function getCode() {
 }
 
 // 头像点击事件
-async function userInfo() {
-  if (useSelfStore().token) {
-    // 转向个人设置
-    alert('已登录')
-  } else {
+async function userInfo(event: Event) {
+  if (!useSelfStore().token) {
     dialogFormVisible.value = true
+    event.stopPropagation()
   }
 }
 
@@ -104,6 +120,8 @@ function stringToBase64(str: string): string {
   return btoa(binaryStr)
 }
 
+const selfStore = useSelfStore()
+
 async function login() {
   if (!userAccount.value) return
   userAccount.value.validate()
@@ -122,11 +140,12 @@ async function login() {
 
   const { token, user } = response.data
 
-  const userStore = useSelfStore()
-  userStore.setUserInfo(user, token)
+  selfStore.setUserInfo(user, token)
 
   // 注册成功处理
   ElMessage.success('登录成功')
   window.location.reload()
 }
 </script>
+
+<style scoped></style>
