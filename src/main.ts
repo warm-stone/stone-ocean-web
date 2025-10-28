@@ -7,7 +7,10 @@ import App from './App.vue'
 import router from './router/router.ts'
 import ElementPlus from 'element-plus'
 import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate' // 导入插件
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { tryIpv6 } from '@/utils/ipv6.ts' // 导入插件
+
+await tryIpv6()
 
 const app = createApp(App)
 
