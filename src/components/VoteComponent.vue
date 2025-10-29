@@ -19,7 +19,20 @@
               <!-- 2. 中间大段文本：占据图片到气泡之间的所有空间，允许换行 -->
               <div class="text-content">
                 <el-text size="large">{{ member.name }}</el-text>
-                <!-- 大段文本 -->
+
+                <div class="user-tag-container">
+                  <el-avatar
+                    class="vote-record-avatar"
+                    :src="userCache[member.creator]?.avatarUrl"
+                    size="small"
+                  />
+                  <div class="vote-record-nickname">
+                    <el-text size="default" type="info">{{
+                        userCache[member.creator]?.nickname
+                    }}</el-text>
+                    <!-- 大段文本 -->
+                  </div>
+                </div>
               </div>
 
               <!-- 3. 票数气泡：紧挨着文本右侧，视觉突出 -->
@@ -69,11 +82,16 @@
                   v-for="voteRecordSumItem in getVoteRecordSum(member.id)"
                   :key="voteRecordSumItem.creator"
                 >
-                  <el-avatar class="vote-record-avatar" :src="avatarUrlCache[voteRecordSumItem.creator]" size="small" />
-<!--                  {{ voteRecordSumItem }}-->
-                  <!-- 2. 中间大段文本：占据图片到气泡之间的所有空间，允许换行 -->
+                  <!--                  <el-avatar class="vote-record-avatar" :src="avatarUrlCache[voteRecordSumItem.creator]" size="small" />-->
+                  <el-avatar
+                    class="vote-record-avatar"
+                    :src="userCache[voteRecordSumItem.creator]?.avatarUrl"
+                    size="small"
+                  />
                   <div class="vote-record-nickname">
-                    <el-text size="default" type="info" >{{ userCacheStore.getByUserId(voteRecordSumItem.creator)?.nickname }}</el-text>
+                    <el-text size="default" type="info">{{
+                        userCache[voteRecordSumItem.creator]?.nickname
+                    }}</el-text>
                     <!-- 大段文本 -->
                   </div>
 
@@ -81,7 +99,6 @@
                   <div class="vote-record-count">
                     {{ voteRecordSumItem.voteCount }}
                   </div>
-
                 </div>
               </el-scrollbar>
             </el-tab-pane>
@@ -141,7 +158,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, type PropType, reactive, ref } from 'vue'
+import { computed, onMounted, type PropType, reactive, ref, watch } from 'vue'
 
 import type {
   ApiResult,
@@ -152,13 +169,12 @@ import type {
   VoteRecordSumDTO,
 } from '@/utils/interfaces.ts'
 import { ElMessage, ElUpload, type TabsPaneContext } from 'element-plus'
-import { API_BASE_URL, API_IMG_URL, API_URLS, get, post } from '@/utils/network.ts'
+import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
 import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
 import { Plus } from '@element-plus/icons-vue'
-import { useSelfStore, useUserCacheStore } from '@/utils/piniaCache.ts'
+import { useSelfStore } from '@/utils/piniaCache.ts'
+import { getByUserId } from '@/utils/cacheTool.ts'
 
-
-const userCacheStore = useUserCacheStore()
 
 const props = defineProps({
   rankMembers: {
@@ -171,29 +187,39 @@ const props = defineProps({
   },
 })
 
-// 投票记录
-const avatarUrlCache = ref<Record<number | string, string>>({})
-
-const loadAvatarUrl = async (userId: number) => {
-  let userInfo = userCacheStore.getByUserId(userId)
-
-  // 缓存中无用户信息，先请求用户数据
-  if (!userInfo) {
-    const response = await post<ApiResult<User>>(API_URLS.user.member(userId))
-    userInfo = response.data
-    userCacheStore.setUser(userId, userInfo)
+onMounted(async() =>  {
+  for (const member of sortedRankMembers.value) {
+    await loadUserCache(member.creator)
   }
+})
 
-  // 处理头像URL，存入缓存
-  if (!userInfo.avatarUrl) {
-    avatarUrlCache.value[userId] = '' // 无头像时存空字符串
-    return
+watch(
+  () => props.rankMembers,
+  async (newVal) => {
+    if (newVal.length > 0) { // 确保有值时再执行
+      for (const member of newVal) {
+        await loadUserCache(member.creator)
+      }
+    }
+  },
+  { immediate: true } // 初始化时立即执行一次
+)
+
+// region 用户缓存
+const userCache = ref<Record<number, User>>({})
+const loadUserCache = async (userId: number | number[]) => {
+  if (Array.isArray(userId)) {
+    for (const id of userId) {
+      userCache.value[id] = await getByUserId(id)
+    }
   }
-  avatarUrlCache.value[userId] = userInfo.avatarUrl.startsWith('http')
-    ? userInfo.avatarUrl
-    : API_IMG_URL(userInfo.avatarUrl)
+  else {
+    userCache.value[userId] = await getByUserId(userId)
+  }
 }
+// endregion
 
+// region  投票记录
 const sortedRankMembers = computed(() => {
   // 先检查数据是否存在，避免错误
   if (!props.rankMembers || !Array.isArray(props.rankMembers)) {
@@ -203,6 +229,7 @@ const sortedRankMembers = computed(() => {
   // 使用 .slice() 或扩展运算符创建副本，避免修改原 prop
   return [...props.rankMembers].sort((a, b) => b.scoreSum - a.scoreSum)
 })
+// endregion
 
 // region  请求子项
 const subMembers = ref<Record<string, RankMember[]>>({})
@@ -258,7 +285,7 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   // 加载用户缓存
   const userIds = response.data.map((item) => item.creator) // 假设 creator 是用户ID
   for (const userId of userIds) {
-    await loadAvatarUrl(userId) // 循环加载每个用户的头像
+    await loadUserCache(userId) // 循环加载每个用户信息
   }
 }
 
@@ -387,8 +414,16 @@ const registerRules = reactive({
   --el-box-shadow: 'hover';
 }
 
-.vote-record-avatar {
+.user-tag-container {
+  display: flex;
+  gap: 16px; /* 元素间间距 */
+  border-radius: 8px;
+  flex-wrap: wrap; /* 空间不足时自动换行 */
+  flex-direction: row; /* 横向布局（默认值，可省略） */
+  align-items: center; /* 子元素在垂直方向居中对齐 */
+}
 
+.vote-record-avatar {
   align-items: center;
 }
 /* 中间大段文本：占据剩余空间，允许换行 */
@@ -411,7 +446,6 @@ const registerRules = reactive({
   justify-content: center;
   text-size-adjust: auto;
 }
-
 
 /* 响应式处理：空间不足时（如手机屏幕）自动换行 */
 @media (max-width: 960px) {
