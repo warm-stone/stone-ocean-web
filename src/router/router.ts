@@ -42,6 +42,11 @@ const router = createRouter({
       // component: OAuth2Login
       component: () => import('@/views/UserRegister.vue'),
     },
+    {
+      path: '/heart4zsm',
+      name: 'heart',
+      component: () => import('@/views/BeatingHeart.vue')
+    }
   ],
 })
 
