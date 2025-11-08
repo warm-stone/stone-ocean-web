@@ -2,7 +2,7 @@
 import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import Login from '@/components/CommonLogin.vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const isDark = useDark()
@@ -45,7 +45,7 @@ function handleMouseMove(e: MouseEvent) {
 
   // 检查是否达到晃动次数阈值
   if (shakeCount.value >= shakeThreshold) {
-    if(Math.random() > 0.5) {
+    if (Math.random() > 0.5) {
       ElMessage.error('好爽好爽')
     } else {
       ElMessage.success('成功摸鱼')
@@ -61,22 +61,28 @@ function resetShakeDetection() {
   lastPosition.value = { x: 0, y: 0 }
 }
 
+// 跳转链接
+const blogUrl = computed(() => {
+  if (window.location.host.startsWith('ipv6')) {
+    return 'https://ipv6.blog.warmstone.top';
+  }
+  else {
+    return 'https://blog.warmstone.top';
+  }
+})
 </script>
 
 <template>
   <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false">
     <el-menu-item index="1"
-    ><a href="https://blog.warmstone.top" style="text-decoration: none">博客</a></el-menu-item
+      ><a :href=blogUrl style="text-decoration: none">博客</a></el-menu-item
     >
-    <el-menu-item index="2" @click="gotoVOTE"> 广场 </el-menu-item>
+    <el-menu-item index="2" @click="gotoVOTE"> 广场</el-menu-item>
     <!-- 为index="3"的菜单添加鼠标移动事件监听 -->
-    <el-sub-menu
-      index="3"
-      @mousemove="handleMouseMove"
-    >
+    <el-sub-menu index="3" @mousemove="handleMouseMove">
       <template #title>🐟🐠🐳</template>
-<!--      <el-menu-item index="3-1">猜谜</el-menu-item>-->
-<!--      <el-menu-item index="3-2">baike</el-menu-item>-->
+      <!--      <el-menu-item index="3-1">猜谜</el-menu-item>-->
+      <!--      <el-menu-item index="3-2">baike</el-menu-item>-->
     </el-sub-menu>
     <el-menu-item index="10">
       <el-switch

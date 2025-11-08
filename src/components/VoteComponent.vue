@@ -7,18 +7,29 @@
             <!-- 容器：Flex布局，横向排列，空间不足自动换行 -->
             <div class="vote-container">
               <!-- 1. 左侧头像：固定左上角，与顶部对齐 -->
-              <el-avatar
-                v-if="member.coverUrl"
-                fit="cover"
-                shape="square"
-                class="avatar"
-                :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
-                size="large"
-              />
+              <template v-if="useElAvatar">
+                <el-avatar
+                  v-if="member.coverUrl"
+                  fit="cover"
+                  shape="square"
+                  class="avatar"
+                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                />
+              </template>
+              <template v-else>
+                <img
+                  class="item-img"
+                  v-if="member.coverUrl"
+                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                  alt="头像"
+                />
+              </template>
 
               <!-- 2. 中间大段文本：占据图片到气泡之间的所有空间，允许换行 -->
               <div class="text-content">
                 <el-text size="large">{{ member.name }}</el-text>
+                <br />
+                <el-text type="info">{{ member.description }}</el-text>
 
                 <div class="user-tag-container">
                   <el-avatar
@@ -27,9 +38,9 @@
                     size="small"
                   />
                   <div class="vote-record-nickname">
-                    <el-text size="default" type="info">{{
-                        userCache[member.creator]?.nickname
-                    }}</el-text>
+                    <el-text size="default" type="info">
+                      {{ userCache[member.creator]?.nickname }}
+                    </el-text>
                     <!-- 大段文本 -->
                   </div>
                 </div>
@@ -69,7 +80,7 @@
             @tab-click="(pane: TabsPaneContext) => reqVoteRecordSumInfo(pane, member.id)"
           >
             <el-tab-pane label="评论。。。" name="subMember">
-              <vote-component :rank-list="rankList" :rank-members="getSubMembers(member.id)" />
+              <vote-component :rank-list="rankList" :rank-members="getSubMembers(member.id)" :use-el-avatar=false />
 
               <el-button type="primary" class="!ml-0" plain @click="showAddDialog(member)">
                 回复
@@ -89,9 +100,9 @@
                     size="small"
                   />
                   <div class="vote-record-nickname">
-                    <el-text size="default" type="info">{{
-                        userCache[voteRecordSumItem.creator]?.nickname
-                    }}</el-text>
+                    <el-text size="default" type="info"
+                      >{{ userCache[voteRecordSumItem.creator]?.nickname }}
+                    </el-text>
                     <!-- 大段文本 -->
                   </div>
 
@@ -175,7 +186,6 @@ import { Plus } from '@element-plus/icons-vue'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 import { getByUserId } from '@/utils/cacheTool.ts'
 
-
 const props = defineProps({
   rankMembers: {
     type: Object as PropType<RankMember[]>,
@@ -185,9 +195,13 @@ const props = defineProps({
     type: Object as PropType<RankList>,
     required: true,
   },
+  useElAvatar: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-onMounted(async() =>  {
+onMounted(async () => {
   for (const member of sortedRankMembers.value) {
     await loadUserCache(member.creator)
   }
@@ -196,13 +210,14 @@ onMounted(async() =>  {
 watch(
   () => props.rankMembers,
   async (newVal) => {
-    if (newVal.length > 0) { // 确保有值时再执行
+    if (newVal.length > 0) {
+      // 确保有值时再执行
       for (const member of newVal) {
         await loadUserCache(member.creator)
       }
     }
   },
-  { immediate: true } // 初始化时立即执行一次
+  { immediate: true }, // 初始化时立即执行一次
 )
 
 // region 用户缓存
@@ -212,8 +227,7 @@ const loadUserCache = async (userId: number | number[]) => {
     for (const id of userId) {
       userCache.value[id] = await getByUserId(id)
     }
-  }
-  else {
+  } else {
     userCache.value[userId] = await getByUserId(userId)
   }
 }
@@ -367,9 +381,13 @@ const registerRules = reactive({
 
 /* 头像样式：固定尺寸，确保左上角位置 */
 .avatar {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   flex-shrink: 0; /* 不被挤压变形 */
+}
+.item-img {
+  max-width: 100%;
+  max-height: 800px;
 }
 
 /* 中间大段文本：占据剩余空间，允许换行 */
@@ -426,6 +444,7 @@ const registerRules = reactive({
 .vote-record-avatar {
   align-items: center;
 }
+
 /* 中间大段文本：占据剩余空间，允许换行 */
 .vote-record-nickname {
   align-items: center;

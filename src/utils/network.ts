@@ -90,7 +90,7 @@ apiClient.interceptors.response.use(
       const { status } = error.response;
       switch (status) {
         case 401:
-          errorMessage = '登录已过期，请重新登录';
+          errorMessage = '鉴权错误，请登录';
           // 清除无效token
           useSelfStore().clearUserInfo()
           // 可添加跳转登录页逻辑：window.location.href = '/login'
