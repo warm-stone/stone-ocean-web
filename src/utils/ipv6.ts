@@ -6,7 +6,7 @@ import axios from 'axios'
 // 检测是否能访问 ipv6.xx.com（通过尝试加载一个小资源）
 async function checkIpv6Access(host: string) {
   // 用 ipv6.xx.com 的一个小图标作为检测目标（确保该资源存在）
-  const url = `http://${host}/favicon.ico?${Math.random()}` // 加随机数避免缓存
+  const url = `//${host}/favicon.ico?${Math.random()}` // 加随机数避免缓存
   try {
     await axios.get(url)
     return true
