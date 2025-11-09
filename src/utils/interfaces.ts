@@ -85,15 +85,16 @@ export interface OAuth2ClientInfo {
 export enum GameType {
   GUESSING = '猜谜',
   CAIYAN_BAIKE = '猜盐-baike',
+  UNKNOWN = '未知',
 }
 // 2. 安全获取枚举值：先验证变量是否为枚举的有效键
-export function getGameTypeValueByKey(key: string): string {
+export function getGameTypeValueByKey(key: string): GameType {
   // 类型守卫：判断 key 是否在枚举的键中（排除数字枚举的反向映射）
   if (Object.prototype.hasOwnProperty.call(GameType, key)) {
-    return GameType[key as keyof typeof GameType].toString(); // 类型断言：key 是枚举的有效键
+    return GameType[key as keyof typeof GameType]; // 类型断言：key 是枚举的有效键
   }
   console.warn(`无效的枚举键：${key}`);
-  return key;
+  return GameType.UNKNOWN;
 }
 
 /**
