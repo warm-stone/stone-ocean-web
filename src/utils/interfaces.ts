@@ -81,3 +81,74 @@ export interface OAuth2ClientInfo {
   scopes: string[];
   authorizationUri: string;
 }
+
+export enum GameType {
+  GUESSING = '猜谜',
+  CAIYAN_BAIKE = '猜盐-baike',
+}
+// 2. 安全获取枚举值：先验证变量是否为枚举的有效键
+export function getGameTypeValueByKey(key: string): string {
+  // 类型守卫：判断 key 是否在枚举的键中（排除数字枚举的反向映射）
+  if (Object.prototype.hasOwnProperty.call(GameType, key)) {
+    return GameType[key as keyof typeof GameType].toString(); // 类型断言：key 是枚举的有效键
+  }
+  console.warn(`无效的枚举键：${key}`);
+  return key;
+}
+
+/**
+ * 游戏实体类
+ * 对应后端 Game.java
+ */
+export interface Game {
+  /**
+   * 主键ID
+   */
+  id: number;
+
+  /**
+   * 游戏名称
+   */
+  name: string;
+
+  /**
+   * 游戏类型
+   */
+  type: GameType;
+
+  /**
+   * 游戏内容
+   */
+  content: string;
+
+  /**
+   * 游戏答案（仅用于前端提交，后端返回时可能不包含此字段）
+   */
+  answer?: string;
+
+  /**
+   * 创建者ID
+   */
+  creator: number;
+  creatorName: string;
+
+  /**
+   * 创建时间
+   */
+  createdTime: string;
+
+  /**
+   * 修改者ID
+   */
+  modifier: number;
+
+  /**
+   * 更新时间
+   */
+  updatedTime: string;
+
+  /**
+   * 删除时间，NULL 表示未删除
+   */
+  deletedTime?: string;
+}

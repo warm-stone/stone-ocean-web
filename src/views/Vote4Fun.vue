@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import axios from 'axios'
 import RankListComponent from '@/components/RankListComponent.vue'
-import type { PageResult, RankList } from '@/utils/interfaces.ts'
+import type { ApiResult, PageResult, RankList } from '@/utils/interfaces.ts'
 import router from '@/router/router.ts'
+import { API_URLS, get } from '@/utils/network.ts'
 
-const backendUrl = import.meta.env.VITE_BASE_URL
 const rankList = ref<PageResult<RankList>>({
   page: 1,
   size: 0,
@@ -16,11 +15,10 @@ const page = ref(1)
 const size = ref(5)
 
 async function getRankList() {
-  const response = await axios.get(
-    `${backendUrl}/rankList/page?page=${page.value}&size=${size.value}`,
-
+  const response = await get<ApiResult<PageResult<RankList>>>(
+    API_URLS.rankList.page(page.value, size.value)
   )
-  rankList.value = response.data.data
+  rankList.value = response.data
 }
 
 onMounted(() => {
@@ -83,8 +81,8 @@ function postArticles() {
     margin-left: 0;
     margin-right: 0;
   }
-
 }
+
 .ranklist-item {
   margin: 3px;
 }

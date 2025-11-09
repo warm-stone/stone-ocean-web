@@ -6,10 +6,11 @@
     <template #dropdown>
       <el-dropdown-menu>
         <el-dropdown-item command="settings">设置</el-dropdown-item>
-        <el-dropdown-item divided> {{ selfStore.user?.nickname }}</el-dropdown-item>
-        <el-dropdown-item> {{ selfStore.user?.account }}</el-dropdown-item>
-        <el-dropdown-item> {{ selfStore.user?.sex }}</el-dropdown-item>
-        <el-dropdown-item> {{ selfStore.user?.des }}</el-dropdown-item>
+        <el-dropdown-item divided><el-text type="info">昵称&nbsp;&nbsp;</el-text> {{ selfStore.user?.nickname }}</el-dropdown-item>
+        <el-dropdown-item><el-text type="info">账户&nbsp;&nbsp;</el-text> {{ selfStore.user?.account }}</el-dropdown-item>
+        <el-dropdown-item><el-text type="info">性别&nbsp;&nbsp;</el-text> {{ selfStore.user?.sex }}</el-dropdown-item>
+        <el-dropdown-item><el-text type="info">个签&nbsp;&nbsp;</el-text> {{ selfStore.user?.des }}</el-dropdown-item>
+        <el-dropdown-item divided command="logout"> 退出 </el-dropdown-item>
       </el-dropdown-menu>
     </template>
   </el-dropdown>
@@ -49,6 +50,9 @@ import { useSelfStore } from '@/utils/piniaCache.ts'
 const handleCommand = (command: string) => {
   if (command == 'settings') {
     window.location.href = '/user/modify'
+  }
+  if (command == 'logout') {
+    useSelfStore().clearUserInfo()
   }
 }
 

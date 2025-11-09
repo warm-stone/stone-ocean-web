@@ -13,10 +13,14 @@ const shakeCount = ref(0)
 const lastPosition = ref({ x: 0, y: 0 })
 const startTime = ref<number | null>(null)
 const shakeThreshold = 3 // 触发提示的晃动次数
-const timeWindow = 10000 // 时间窗口(毫秒)
+const timeWindow = 3000 // 时间窗口(毫秒)
 
 function gotoVOTE() {
   window.location.href = '/vote4fun'
+}
+
+function gotoGames() {
+  window.location.href = '/games'
 }
 
 // 处理鼠标移动事件
@@ -64,25 +68,22 @@ function resetShakeDetection() {
 // 跳转链接
 const blogUrl = computed(() => {
   if (window.location.host.startsWith('ipv6')) {
-    return 'https://ipv6.blog.warmstone.top';
-  }
-  else {
-    return 'https://blog.warmstone.top';
+    return 'https://ipv6.blog.warmstone.top'
+  } else {
+    return 'https://blog.warmstone.top'
   }
 })
 </script>
 
 <template>
   <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false">
-    <el-menu-item index="1"
-      ><a :href=blogUrl style="text-decoration: none">博客</a></el-menu-item
-    >
+    <el-menu-item index="1"><a :href="blogUrl" style="text-decoration: none">博客</a></el-menu-item>
     <el-menu-item index="2" @click="gotoVOTE"> 广场</el-menu-item>
     <!-- 为index="3"的菜单添加鼠标移动事件监听 -->
     <el-sub-menu index="3" @mousemove="handleMouseMove">
       <template #title>🐟🐠🐳</template>
-      <!--      <el-menu-item index="3-1">猜谜</el-menu-item>-->
-      <!--      <el-menu-item index="3-2">baike</el-menu-item>-->
+      <el-menu-item index="3-1" @click="gotoGames">游戏</el-menu-item>
+      <el-menu-item index="3-2">房间-开发中</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="10">
       <el-switch

@@ -15,6 +15,12 @@ const router = createRouter({
       children: [],
     },
     {
+      path: '/games',
+      name: 'games',
+      component: () => import('@/views/GameList.vue'),
+      children: [],
+    },
+    {
       path: '/vote4fun/vote_detail/:rankListId',
       name: 'vote4fun_vote_detail',
       component: () => import('@/views/VoteDetail.vue'),
