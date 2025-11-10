@@ -10,7 +10,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { tryIpv6 } from '@/utils/ipv6.ts' // 导入插件
 
-await tryIpv6()
+tryIpv6()
 
 const app = createApp(App)
 
