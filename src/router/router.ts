@@ -15,12 +15,6 @@ const router = createRouter({
       children: [],
     },
     {
-      path: '/games',
-      name: 'games',
-      component: () => import('@/views/GameList.vue'),
-      children: [],
-    },
-    {
       path: '/vote4fun/vote_detail/:rankListId',
       name: 'vote4fun_vote_detail',
       component: () => import('@/views/VoteDetail.vue'),
@@ -29,6 +23,18 @@ const router = createRouter({
       path: '/vote4fun/publish',
       name: 'vote4fun_publish',
       component: () => import('@/views/PublishPost.vue'),
+    },
+    {
+      path: '/game',
+      name: 'game',
+      component: () => import('@/views/GameList.vue'),
+      children: [],
+    },
+    {
+      path: '/game/publish',
+      name: 'games_publish',
+      component: () => import('@/views/PublishGame.vue'),
+      children: [],
     },
     {
       path: '/biographic-note/:id',

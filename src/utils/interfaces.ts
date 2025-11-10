@@ -112,10 +112,12 @@ export interface Game {
    */
   name: string;
 
+  // 提示
+  prompt:string;
   /**
    * 游戏类型
    */
-  type: GameType;
+  type: GameType | string;
 
   /**
    * 游戏内容

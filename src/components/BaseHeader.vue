@@ -20,7 +20,7 @@ function gotoVOTE() {
 }
 
 function gotoGames() {
-  window.location.href = '/games'
+  window.location.href = '/game'
 }
 
 // 处理鼠标移动事件
@@ -54,6 +54,7 @@ function handleMouseMove(e: MouseEvent) {
     } else {
       ElMessage.success('成功摸鱼')
     }
+    loopDisplayText()
     resetShakeDetection()
   }
 }
@@ -73,6 +74,16 @@ const blogUrl = computed(() => {
     return 'https://blog.warmstone.top'
   }
 })
+
+// 文本循环
+const fishingTitle = ref('🐟🐠🐳')
+function loopDisplayText(interval: number = 500): void {
+  // 设置定时器循环变换
+  setInterval(() => {
+    // 将第一个字符移到末尾
+    fishingTitle.value = fishingTitle.value.slice(2) + fishingTitle.value.slice(0,2)
+  }, interval)
+}
 </script>
 
 <template>
@@ -81,7 +92,7 @@ const blogUrl = computed(() => {
     <el-menu-item index="2" @click="gotoVOTE"> 广场</el-menu-item>
     <!-- 为index="3"的菜单添加鼠标移动事件监听 -->
     <el-sub-menu index="3" @mousemove="handleMouseMove">
-      <template #title>🐟🐠🐳</template>
+      <template #title>{{ fishingTitle }}</template>
       <el-menu-item index="3-1" @click="gotoGames">游戏</el-menu-item>
       <el-menu-item index="3-2">房间-开发中</el-menu-item>
     </el-sub-menu>
