@@ -8,9 +8,9 @@ import router from './router/router.ts'
 import ElementPlus from 'element-plus'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { tryIpv6 } from '@/utils/ipv6.ts' // 导入插件
+// import { tryIpv6 } from '@/utils/ipv6.ts' // ipv6 域名优先
 
-tryIpv6()
+// tryIpv6()
 
 const app = createApp(App)
 

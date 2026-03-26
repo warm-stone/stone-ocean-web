@@ -2,7 +2,7 @@
 import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import Login from '@/components/CommonLogin.vue'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const isDark = useDark()
@@ -67,13 +67,8 @@ function resetShakeDetection() {
 }
 
 // 跳转链接
-const blogUrl = computed(() => {
-  if (window.location.host.startsWith('ipv6')) {
-    return 'https://ipv6.blog.warmstone.top'
-  } else {
-    return 'https://blog.warmstone.top'
-  }
-})
+const blogUrl = 'https://warm-stone.github.io/hexo-blog/'
+
 
 // 文本循环
 const fishingTitle = ref('🐟🐠🐳')
