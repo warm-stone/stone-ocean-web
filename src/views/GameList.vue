@@ -1,7 +1,9 @@
 <template>
   <div class="main-div">
     <div class="right-button-div">
-      <el-button type="primary" size="default" @click="router.push(`/game/publish`)"> 发布 </el-button>
+      <el-button type="primary" size="default" @click="router.push(`/game/publish`)">
+        发布
+      </el-button>
     </div>
     <el-auto-resizer>
       <template #default="{ height, width }">
@@ -69,9 +71,9 @@ async function loadGameData() {
   )
   try {
     for (const game of response.data.records) {
-        const user = await getByUserId(game.creator)
-        game.creatorName = user.nickname
-        game.type = getGameTypeValueByKey(game.type)
+      const user = await getByUserId(game.creator)
+      game.creatorName = user.nickname
+      game.type = getGameTypeValueByKey(game.type)
     }
   } catch (error) {
     console.log(error)

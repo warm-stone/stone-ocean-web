@@ -35,12 +35,8 @@ async function reqRankMember(id: string | number) {
 const registerFormRef = ref()
 // 注册表单验证规则
 const registerRules = reactive({
-  name: [
-    { required: true, message: '请输入内容', trigger: 'blur' },
-  ],
-  coverUrl: [
-    { required: false },
-  ],
+  name: [{ required: true, message: '请输入内容', trigger: 'blur' }],
+  coverUrl: [{ required: false }],
 })
 
 // endregion
@@ -88,7 +84,6 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
     ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
   }
 }
-
 
 // endregion
 </script>
@@ -168,7 +163,6 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
     margin-left: 0;
     margin-right: 0;
   }
-
 }
 .upload-placeholder {
   display: flex;

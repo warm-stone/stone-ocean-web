@@ -38,7 +38,7 @@ export const useSelfStore = defineStore(StoreId.SelfInfo, {
 
 export const useUserCacheStore = defineStore(StoreId.UsersCache, {
   state: () => ({
-    userRecord: {  } as Record<number, User> ,
+    userRecord: {} as Record<number, User>,
   }),
   getters: {
     getByUserId(): (userId: number) => User | undefined {
@@ -58,7 +58,7 @@ export const useUserCacheStore = defineStore(StoreId.UsersCache, {
     // 清空所有缓存
     clearAll() {
       this.userRecord = {}
-    }
+    },
   },
   persist: {
     storage: sessionStorage,

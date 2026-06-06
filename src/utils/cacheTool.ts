@@ -16,8 +16,7 @@ export const getByUserId = async (userId: number) => {
       // 处理头像URL
       if (!userInfo.avatarUrl) {
         userInfo.avatarUrl = undefined
-      }
-      else {
+      } else {
         userInfo.avatarUrl = userInfo.avatarUrl.startsWith('http')
           ? userInfo.avatarUrl
           : API_IMG_URL(userInfo.avatarUrl)

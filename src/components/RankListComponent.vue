@@ -13,14 +13,17 @@ const props = defineProps({
     required: true,
   },
 })
-
-
 </script>
 
 <template>
   <div class="post-item" :class="{ 'dark-mode': isDark }">
     <!-- 左侧头像 -->
-    <el-avatar fit="cover" shape="square" class="post-avatar" :src="API_IMG_URL(props.rankList.coverUrl)" />
+    <el-avatar
+      fit="cover"
+      shape="square"
+      class="post-avatar"
+      :src="API_IMG_URL(props.rankList.coverUrl)"
+    />
 
     <!-- 中间内容区：标题 + 描述 + 标签/作者/时间 -->
     <div class="post-content">

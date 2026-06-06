@@ -49,7 +49,7 @@ const router = createRouter({
     },
     {
       // value: [register, modify]
-      path: '/user/:behavior' ,
+      path: '/user/:behavior',
       name: 'user_register',
       // component: OAuth2Login
       component: () => import('@/views/UserRegister.vue'),
@@ -57,8 +57,8 @@ const router = createRouter({
     {
       path: '/heart4zsm',
       name: 'heart',
-      component: () => import('@/views/BeatingHeart.vue')
-    }
+      component: () => import('@/views/BeatingHeart.vue'),
+    },
   ],
 })
 

@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import {Calendar, Iphone, Location, School, Tickets, User} from '@element-plus/icons-vue'
-import {onMounted, ref} from 'vue'
-import {useRoute} from 'vue-router'
+import { Calendar, Iphone, Location, School, Tickets, User } from '@element-plus/icons-vue'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 
 const backendUrl = import.meta.env.VITE_BASE_URL
 const route = useRoute()
-
 
 const name = ref('')
 const birthday = ref('')
@@ -21,8 +20,8 @@ const experiences = ref([
     id: 0,
     title: '',
     exp: '',
-    ord: 0
-  }
+    ord: 0,
+  },
 ])
 
 const fetchData = async () => {
@@ -30,7 +29,7 @@ const fetchData = async () => {
   const response = await axios.get(`${backendUrl}/biographic/get/${route.params.id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
-    }
+    },
   })
   if (response.data.code != 200) {
     alert('请求数据失败')
@@ -52,25 +51,17 @@ onMounted(() => {
   fetchData()
   console.log(route.params.id)
 })
-
-
 </script>
 
 <template>
   <el-row justify="center">
     <el-col :span="12">
-
-      <el-descriptions
-          class="margin-top"
-          title="简历"
-          :column="3"
-          border
-      >
+      <el-descriptions class="margin-top" title="简历" :column="3" border>
         <el-descriptions-item>
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <user/>
+                <user />
               </el-icon>
               姓名
             </div>
@@ -81,7 +72,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <iphone/>
+                <iphone />
               </el-icon>
               邮箱
             </div>
@@ -92,7 +83,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <Calendar/>
+                <Calendar />
               </el-icon>
               出生年月
             </div>
@@ -103,7 +94,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <location/>
+                <location />
               </el-icon>
               所在地
             </div>
@@ -114,7 +105,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <school/>
+                <school />
               </el-icon>
               毕业院校
             </div>
@@ -125,7 +116,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <Calendar/>
+                <Calendar />
               </el-icon>
               毕业日期
             </div>
@@ -136,7 +127,7 @@ onMounted(() => {
           <template #label>
             <div class="cell-item">
               <el-icon>
-                <tickets/>
+                <tickets />
               </el-icon>
               技能
             </div>
@@ -145,11 +136,11 @@ onMounted(() => {
         </el-descriptions-item>
       </el-descriptions>
       <div style="margin-top: 10px">
-
         <el-card
-            shadow="hover"
-            style="border-radius: 0"
-            v-for="(_item, index) in experiences" :key="index"
+          shadow="hover"
+          style="border-radius: 0"
+          v-for="(_item, index) in experiences"
+          :key="index"
         >
           <template #header>
             <div class="card-header">
@@ -164,7 +155,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
 .cell-item {
   display: flex;
   align-items: center;

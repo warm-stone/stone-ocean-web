@@ -69,14 +69,13 @@ function resetShakeDetection() {
 // 跳转链接
 const blogUrl = 'https://warm-stone.github.io/hexo-blog/'
 
-
 // 文本循环
 const fishingTitle = ref('🐟🐠🐳')
 function loopDisplayText(interval: number = 500): void {
   // 设置定时器循环变换
   setInterval(() => {
     // 将第一个字符移到末尾
-    fishingTitle.value = fishingTitle.value.slice(2) + fishingTitle.value.slice(0,2)
+    fishingTitle.value = fishingTitle.value.slice(2) + fishingTitle.value.slice(0, 2)
   }, interval)
 }
 </script>

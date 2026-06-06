@@ -282,7 +282,7 @@ const handleSubmit = async () => {
     userStore.setUserInfo(user, token)
 
     // 注册成功处理
-    const msg = behavior == 'modify'? '修改成功': '注册成功'
+    const msg = behavior == 'modify' ? '修改成功' : '注册成功'
     ElMessage.success(msg)
     await router.push('/')
   } finally {

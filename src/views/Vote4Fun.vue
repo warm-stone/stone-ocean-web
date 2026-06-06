@@ -16,7 +16,7 @@ const size = ref(5)
 
 async function getRankList() {
   const response = await get<ApiResult<PageResult<RankList>>>(
-    API_URLS.rankList.page(page.value, size.value)
+    API_URLS.rankList.page(page.value, size.value),
   )
   rankList.value = response.data
 }

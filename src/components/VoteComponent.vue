@@ -80,7 +80,11 @@
             @tab-click="(pane: TabsPaneContext) => reqVoteRecordSumInfo(pane, member.id)"
           >
             <el-tab-pane label="评论。。。" name="subMember">
-              <vote-component :rank-list="rankList" :rank-members="getSubMembers(member.id)" :use-el-avatar=false />
+              <vote-component
+                :rank-list="rankList"
+                :rank-members="getSubMembers(member.id)"
+                :use-el-avatar="false"
+              />
 
               <el-button type="primary" class="!ml-0" plain @click="showAddDialog(member)">
                 回复

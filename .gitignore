@@ -28,3 +28,11 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+## 项目
+.env
+docs
+
+## vibe 工具
+.omo
+AGENTS.md

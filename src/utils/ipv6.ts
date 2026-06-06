@@ -10,7 +10,7 @@ async function checkIpv6Access(host: string) {
   try {
     await axios.get(url)
     return true
-  } catch  {
+  } catch {
     return false
   }
 }

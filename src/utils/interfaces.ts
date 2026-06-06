@@ -1,16 +1,16 @@
 export interface User {
-  id?: number;
-  account: string;
-  passwordHash: string;
-  email?: string;
-  phone?: string;
-  nickname: string;
-  sex?: string;
-  des?: string;
-  avatarUrl?: string;
-  createdTime?: Date;
-  updatedTime?: Date;
-  deletedTime?: Date | null;
+  id?: number
+  account: string
+  passwordHash: string
+  email?: string
+  phone?: string
+  nickname: string
+  sex?: string
+  des?: string
+  avatarUrl?: string
+  createdTime?: Date
+  updatedTime?: Date
+  deletedTime?: Date | null
 }
 
 export interface RankMember {
@@ -61,8 +61,8 @@ export interface PageResult<T> {
 }
 
 export interface ApiResult<T> {
-  statusCode: number,
-  message: string,
+  statusCode: number
+  message: string
   data: T
 }
 
@@ -72,14 +72,14 @@ export interface AuthorizationDTO {
 }
 
 export interface VoteRecordSumDTO {
-  creator:number,
+  creator: number
   voteCount: number
 }
 
 export interface OAuth2ClientInfo {
-  clientId: string;
-  scopes: string[];
-  authorizationUri: string;
+  clientId: string
+  scopes: string[]
+  authorizationUri: string
 }
 
 export enum GameType {
@@ -91,10 +91,10 @@ export enum GameType {
 export function getGameTypeValueByKey(key: string): GameType {
   // 类型守卫：判断 key 是否在枚举的键中（排除数字枚举的反向映射）
   if (Object.prototype.hasOwnProperty.call(GameType, key)) {
-    return GameType[key as keyof typeof GameType]; // 类型断言：key 是枚举的有效键
+    return GameType[key as keyof typeof GameType] // 类型断言：key 是枚举的有效键
   }
-  console.warn(`无效的枚举键：${key}`);
-  return GameType.UNKNOWN;
+  console.warn(`无效的枚举键：${key}`)
+  return GameType.UNKNOWN
 }
 
 /**
@@ -105,53 +105,53 @@ export interface Game {
   /**
    * 主键ID
    */
-  id: number;
+  id: number
 
   /**
    * 游戏名称
    */
-  name: string;
+  name: string
 
   // 提示
-  prompt:string;
+  prompt: string
   /**
    * 游戏类型
    */
-  type: GameType | string;
+  type: GameType | string
 
   /**
    * 游戏内容
    */
-  content: string;
+  content: string
 
   /**
    * 游戏答案（仅用于前端提交，后端返回时可能不包含此字段）
    */
-  answer?: string;
+  answer?: string
 
   /**
    * 创建者ID
    */
-  creator: number;
-  creatorName: string;
+  creator: number
+  creatorName: string
 
   /**
    * 创建时间
    */
-  createdTime: string;
+  createdTime: string
 
   /**
    * 修改者ID
    */
-  modifier: number;
+  modifier: number
 
   /**
    * 更新时间
    */
-  updatedTime: string;
+  updatedTime: string
 
   /**
    * 删除时间，NULL 表示未删除
    */
-  deletedTime?: string;
+  deletedTime?: string
 }

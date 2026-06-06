@@ -25,8 +25,8 @@ async function getToken() {
       userAuth: false,
     },
   )
-  const {token, user} = response.data
-  const userStore =  useSelfStore()
+  const { token, user } = response.data
+  const userStore = useSelfStore()
   userStore.setUserInfo(user, token)
 
   window.location.href = window.location.origin

@@ -154,14 +154,15 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
   }
 }
 
-
 const handleExceed = () => {
-
   ElMessage.error('只允许一张图片')
 }
 // 图片上传前验证
 const beforeAvatarUpload = (rawFile: File) => {
-  const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png' || rawFile.type === 'image/svg+xml'
+  const isJpgOrPng =
+    rawFile.type === 'image/jpeg' ||
+    rawFile.type === 'image/png' ||
+    rawFile.type === 'image/svg+xml'
   if (!isJpgOrPng) {
     ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
     return false
@@ -276,8 +277,6 @@ const handleReset = () => {
   align-items: center;
 }
 
-
-
 .upload-placeholder {
   display: flex;
   flex-direction: column;
@@ -288,7 +287,6 @@ const handleReset = () => {
   color: gray;
 }
 
-
 .upload-icon {
   font-size: 24px;
   margin-bottom: 8px;
@@ -298,15 +296,10 @@ const handleReset = () => {
   font-size: 14px;
 }
 
-
 .form-actions {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
 }
-
-
-
-
 </style>
