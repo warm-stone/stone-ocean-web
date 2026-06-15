@@ -25,18 +25,6 @@ const router = createRouter({
       component: () => import('@/views/PublishPost.vue'),
     },
     {
-      path: '/game',
-      name: 'game',
-      component: () => import('@/views/GameList.vue'),
-      children: [],
-    },
-    {
-      path: '/game/publish',
-      name: 'games_publish',
-      component: () => import('@/views/PublishGame.vue'),
-      children: [],
-    },
-    {
       path: '/biographic-note/:id',
       name: '简历',
       component: () => import('@/views/BiographicalNote.vue'),

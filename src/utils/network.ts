@@ -42,18 +42,7 @@ export const API_URLS = {
       `/voteRecord/statistic/rankMemberId/${rankMemberId}`,
     vote: '/voteRecord/vote',
   },
-  game: {
-    member: (id: string | number) => `/game/member/${id}`,
-    add: '/game/add',
-    delete: (id: string | number) => `/game/delete/${id}`,
-    page: (page: string | number, size: string | number, type?: string) => {
-      let url = `/game/page?page=${page}&size=${size}`
-      if (type) {
-        url += `&type=${type}`
-      }
-      return url
-    },
-  },
+
 }
 
 // 创建axios实例

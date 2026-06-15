@@ -87,8 +87,6 @@ function loopDisplayText(interval: number = 500): void {
     <!-- 为index="3"的菜单添加鼠标移动事件监听 -->
     <el-sub-menu index="3" @mousemove="handleMouseMove">
       <template #title>{{ fishingTitle }}</template>
-      <el-menu-item index="3-1" @click="gotoGames">游戏</el-menu-item>
-      <el-menu-item index="3-2">房间-开发中</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="10">
       <el-switch
