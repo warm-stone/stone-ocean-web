@@ -77,9 +77,10 @@ class HeartAnimation {
     this.particleRate = ANIMATION_SETTINGS.particles.length / ANIMATION_SETTINGS.particles.duration
     this.time = null
     this.heartImage = this.createHeartImage(color)
+    this._resizeHandler = this.resize.bind(this)
 
     this.resize()
-    window.addEventListener('resize', this.resize.bind(this))
+    window.addEventListener('resize', this._resizeHandler)
   }
 
   createHeartImage(color) {
@@ -175,7 +176,7 @@ class HeartAnimation {
 
   destroy() {
     this.stop()
-    window.removeEventListener('resize', this.resize.bind(this))
+    window.removeEventListener('resize', this._resizeHandler)
   }
 }
 
