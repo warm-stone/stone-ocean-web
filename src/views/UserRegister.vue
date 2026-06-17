@@ -24,6 +24,7 @@
           <el-upload
             class="avatar-uploader"
             :action="API_BASE_URL + API_URLS.file.upload"
+            :headers="uploadHeaders"
             :limit="1"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
@@ -122,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -169,6 +170,9 @@ const registerForm = reactive<UserFormData>({
 })
 
 const selfStore = useSelfStore()
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${selfStore.token}`,
+}))
 onMounted(async () => {
   if (behavior == 'modify') {
     const response = await post<ApiResult<User>>(API_URLS.user.self_info)
