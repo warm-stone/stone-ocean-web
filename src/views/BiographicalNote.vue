@@ -2,10 +2,9 @@
 import { Calendar, Iphone, Location, School, Tickets, User } from '@element-plus/icons-vue'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
-import { useSelfStore } from '@/utils/piniaCache.ts'
+import { API_URLS, get } from '@/utils/network.ts'
+import type { ApiResult } from '@/utils/interfaces.ts'
 
-const backendUrl = import.meta.env.VITE_BASE_URL
 const route = useRoute()
 
 const name = ref('')
@@ -24,26 +23,27 @@ const experiences = ref([
   },
 ])
 
-const fetchData = async () => {
-  const token = useSelfStore().token
-  const response = await axios.get(`${backendUrl}/biographic/get/${route.params.id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  if (response.data.code != 200) {
-    alert('请求数据失败')
-    console.error(response)
-    return
-  }
+interface BiographicData {
+  name: string
+  birthday: string
+  email: string
+  university: string
+  graduationDate: string
+  skill: string
+  personalLocation: string
+  experiences: { id: number; title: string; exp: string; ord: number }[]
+}
 
-  const _data = response.data.data
+const fetchData = async () => {
+  const response = await get<ApiResult<BiographicData>>(API_URLS.biographic.get(route.params.id as string))
+  const _data = response.data
   name.value = _data.name
   birthday.value = _data.birthday
   email.value = _data.email
   university.value = _data.university
   graduationDate.value = _data.graduationDate
   skill.value = _data.skill
+  personalLocation.value = _data.personalLocation ?? ''
   experiences.value = _data.experiences
 }
 

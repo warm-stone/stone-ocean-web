@@ -42,6 +42,9 @@ export const API_URLS = {
       `/voteRecord/statistic/rankMemberId/${rankMemberId}`,
     vote: '/voteRecord/vote',
   },
+  biographic: {
+    get: (id: string | number) => `/biographic/get/${id}`,
+  },
 
 }
 
