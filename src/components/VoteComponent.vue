@@ -186,10 +186,10 @@ import type {
 } from '@/utils/interfaces.ts'
 import { ElMessage, ElUpload, type TabsPaneContext } from 'element-plus'
 import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
-import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
 import { Plus } from '@element-plus/icons-vue'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 import { getByUserId } from '@/utils/cacheTool.ts'
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 
 const props = defineProps({
   rankMembers: {
@@ -342,27 +342,9 @@ async function addMember() {
 
 // endregion
 
-const userStore = useSelfStore()
-// region 图片上传
-// 实际图片上传接口地址
-const uploadAction = API_BASE_URL + API_URLS.file.upload
-
-// 2. 上传请求头（自动携带Bearer token）
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`, // 核心：添加认证头
-}))
-
-// 处理头像上传成功
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  if (response.statusCode === 200) {
-    newRankMember.value.coverUrl = response.data
-    ElMessage.success('头像上传成功')
-  } else {
-    ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
-  }
-}
-
-// endregion
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload, handleUploadError } = useFileUpload((fileUrl) => {
+  newRankMember.value.coverUrl = fileUrl
+})
 
 // region 表单校验
 

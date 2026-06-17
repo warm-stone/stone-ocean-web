@@ -23,7 +23,7 @@
         <el-form-item label="头像" prop="avatarUrl">
           <el-upload
             class="avatar-uploader"
-            :action="API_BASE_URL + API_URLS.file.upload"
+            :action="uploadAction"
             :headers="uploadHeaders"
             :limit="1"
             :show-file-list="false"
@@ -123,14 +123,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { API_BASE_URL, API_URLS, post } from '@/utils/network.ts'
 import type { ApiResult, AuthorizationDTO, User } from '@/utils/interfaces.ts'
-import { beforeAvatarUpload } from '@/utils/img.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 // 表单引用
 const registerFormRef = ref()
 
@@ -170,9 +170,9 @@ const registerForm = reactive<UserFormData>({
 })
 
 const selfStore = useSelfStore()
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${selfStore.token}`,
-}))
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload } = useFileUpload((fileUrl) => {
+  registerForm.avatarUrl = fileUrl
+})
 onMounted(async () => {
   if (behavior == 'modify') {
     const response = await post<ApiResult<User>>(API_URLS.user.self_info)
@@ -244,16 +244,6 @@ const registerRules = reactive({
     },
   ],
 })
-
-// 处理头像上传成功
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  if (response.statusCode === 200) {
-    registerForm.avatarUrl = response.data
-    ElMessage.success('头像上传成功')
-  } else {
-    ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
-  }
-}
 
 // 提交表单
 const handleSubmit = async () => {

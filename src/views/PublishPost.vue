@@ -95,31 +95,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElForm, ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { ApiResult, RankList } from '@/utils/interfaces.ts'
 import router from '@/router/router.ts'
-import { useSelfStore } from '@/utils/piniaCache.ts'
 import { API_URLS, post } from '@/utils/network.ts'
-import { handleUploadError } from '@/utils/img.ts'
-
-const userStore = useSelfStore()
-const backendUrl = import.meta.env.VITE_BASE_URL
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 
 // 表单引用
 const postFormRef = ref<InstanceType<typeof ElForm>>()
 
 // 提交状态
 const isSubmitting = ref(false)
-
-// 实际图片上传接口地址
-const uploadAction = `${backendUrl}/file/upload`
-
-// 2. 上传请求头（自动携带Bearer token）
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`, // 核心：添加认证头
-}))
 
 // 表单数据
 const postForm = reactive<RankList>({
@@ -129,6 +117,14 @@ const postForm = reactive<RankList>({
   agreeName: '',
   disagreeName: '',
 } as RankList)
+
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload, handleUploadError } = useFileUpload((fileUrl) => {
+  postForm.coverUrl = fileUrl
+})
+
+const handleExceed = () => {
+  ElMessage.error('只允许一张图片')
+}
 
 // 表单验证规则
 const rules = {
@@ -141,46 +137,6 @@ const rules = {
     { min: 0, max: 100, message: '描述长度在 0 到 100 个字符', trigger: 'blur' },
   ],
   coverUrl: [{ required: false, message: '请上传封面图片', trigger: 'change' }],
-}
-
-// 图片上传成功处理
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  // 示例：假设后端返回 { code: 200, data: { url: 'https://xxx.com/image.jpg' } }
-  if (response.statusCode === 200 && response.data) {
-    postForm.coverUrl = response.data // 保存后端返回的图片URL
-    ElMessage.success('图片上传成功')
-  } else {
-    ElMessage.error('图片上传失败：' + (response.message || '未知错误'))
-  }
-}
-
-const handleExceed = () => {
-  ElMessage.error('只允许一张图片')
-}
-// 图片上传前验证
-const beforeAvatarUpload = (rawFile: File) => {
-  const isJpgOrPng =
-    rawFile.type === 'image/jpeg' ||
-    rawFile.type === 'image/png' ||
-    rawFile.type === 'image/svg+xml'
-  if (!isJpgOrPng) {
-    ElMessage.error('只能上传JPG/PNG/SVG格式的图片')
-    return false
-  }
-
-  const isLt = rawFile.size / 1024 / 1024 < 1
-  if (!isLt) {
-    ElMessage.error('图片大小不能超过 1 MB')
-    return false
-  }
-
-  // 检查token是否存在
-  if (!userStore.token) {
-    ElMessage.error('请先登录')
-    return false
-  }
-
-  return true
 }
 
 // 提交表单

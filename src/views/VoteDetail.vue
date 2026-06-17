@@ -2,13 +2,12 @@
 import VoteComponent from '@/components/VoteComponent.vue'
 import type { ApiResult, RankList, RankMember } from '@/utils/interfaces.ts'
 
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
+import { API_URLS, get, post } from '@/utils/network.ts'
 import { ElMessage, ElUpload } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
-import { useSelfStore } from '@/utils/piniaCache.ts'
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 
 const rankList = ref<RankList>({} as RankList)
 const rankMember = ref<RankMember[]>([])
@@ -72,24 +71,9 @@ async function addMember() {
 // endregion
 
 // region 图片上传
-// 实际图片上传接口地址
-const uploadAction = API_BASE_URL + API_URLS.file.upload
-
-// 2. 上传请求头（自动携带Bearer token）
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${useSelfStore().token}`, // 核心：添加认证头
-}))
-
-// 处理头像上传成功
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  if (response.statusCode === 200) {
-    newRankMember.value.coverUrl = response.data
-    ElMessage.success('头像上传成功')
-  } else {
-    ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
-  }
-}
-
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload, handleUploadError } = useFileUpload((fileUrl) => {
+  newRankMember.value.coverUrl = fileUrl
+})
 // endregion
 </script>
 
