@@ -31,7 +31,6 @@ const router = createRouter({
       path: '/biographic-note/:id',
       name: '简历',
       component: () => import('@/views/BiographicalNote.vue'),
-      meta: { requireAuth: true },
     },
     {
       path: '/login/oauth2/code/:registrationId',
