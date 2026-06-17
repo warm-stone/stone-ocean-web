@@ -84,6 +84,7 @@
                 :rank-list="rankList"
                 :rank-members="getSubMembers(member.id)"
                 :use-el-avatar="false"
+                @vote-updated="handleVoteUpdated"
               />
 
               <el-button type="primary" class="!ml-0" plain @click="showAddDialog(member)">
@@ -205,6 +206,10 @@ const props = defineProps({
   },
 })
 
+const emit = defineEmits<{
+  (e: 'vote-updated', memberId: number | string, voteCount: number): void
+}>()
+
 onMounted(async () => {
   for (const member of sortedRankMembers.value) {
     await loadUserCache(member.creator)
@@ -277,7 +282,17 @@ async function voteToMember(id: number | string, voteCount: number, member: Rank
     voteCount: voteCount,
   } as VoteRecord
   await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
-  member.scoreSum += voteCount
+  emit('vote-updated', id, voteCount)
+}
+
+function handleVoteUpdated(memberId: number | string, voteCount: number) {
+  for (const members of Object.values(subMembers.value)) {
+    const member = members.find((m) => m.id === memberId)
+    if (member) {
+      member.scoreSum += voteCount
+      return
+    }
+  }
 }
 
 // endregion

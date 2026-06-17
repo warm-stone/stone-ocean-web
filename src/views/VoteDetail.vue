@@ -28,6 +28,11 @@ async function reqRankMember(id: string | number) {
   rankMember.value = response.data
 }
 
+function handleVoteUpdated(memberId: number | string, voteCount: number) {
+  const member = rankMember.value.find((m) => m.id === memberId)
+  if (member) member.scoreSum += voteCount
+}
+
 // endregion
 
 // region 表单校验
@@ -95,7 +100,7 @@ const handleAvatarSuccess = (response: ApiResult<string>) => {
 
       {{ rankList.description }}
     </template>
-    <vote-component :rank-list="rankList" :rank-members="rankMember" />
+    <vote-component :rank-list="rankList" :rank-members="rankMember" @vote-updated="handleVoteUpdated" />
     <el-button type="primary" class="!ml-0" plain @click="showAddDialog"> 添加</el-button>
   </el-card>
 
