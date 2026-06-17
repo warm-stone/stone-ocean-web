@@ -211,9 +211,7 @@ const emit = defineEmits<{
 }>()
 
 onMounted(async () => {
-  for (const member of sortedRankMembers.value) {
-    await loadUserCache(member.creator)
-  }
+  await Promise.all(sortedRankMembers.value.map(member => loadUserCache(member.creator)))
 })
 
 watch(
@@ -221,9 +219,7 @@ watch(
   async (newVal) => {
     if (newVal.length > 0) {
       // 确保有值时再执行
-      for (const member of newVal) {
-        await loadUserCache(member.creator)
-      }
+      await Promise.all(newVal.map(member => loadUserCache(member.creator)))
     }
   },
   { immediate: true }, // 初始化时立即执行一次
@@ -317,9 +313,7 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   voteRecordSumInfo.value[id] = response.data
   // 加载用户缓存
   const userIds = response.data.map((item) => item.creator) // 假设 creator 是用户ID
-  for (const userId of userIds) {
-    await loadUserCache(userId) // 循环加载每个用户信息
-  }
+  await Promise.all(userIds.map(userId => loadUserCache(userId)))
 }
 
 // endregion
