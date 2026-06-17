@@ -19,10 +19,12 @@ export const API_URLS = {
     code: (registrationId: string) => `/oauth2Login/${registrationId}/code`,
     register: (registrationId: string) => `/oauth2Login/${registrationId}/register`,
   },
+  auth: {
+    login: '/auth/login',
+  },
   user: {
     add: '/user/add',
     self_info: '/user/selfInfo',
-    login: '/user/login',
     modify: '/user/modify',
     member: (userId: string | number) => `/user/member/${userId}`,
   },
