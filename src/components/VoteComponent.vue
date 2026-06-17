@@ -81,9 +81,11 @@
           >
             <el-tab-pane label="评论。。。" name="subMember">
               <vote-component
+                v-if="canRecurse"
                 :rank-list="rankList"
                 :rank-members="getSubMembers(member.id)"
                 :use-el-avatar="false"
+                :depth="depth + 1"
                 @vote-updated="handleVoteUpdated"
               />
 
@@ -204,7 +206,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  depth: {
+    type: Number,
+    default: 0,
+  },
 })
+
+const MAX_DEPTH = 3
+const canRecurse = computed(() => props.depth < MAX_DEPTH)
 
 const emit = defineEmits<{
   (e: 'vote-updated', memberId: number | string, voteCount: number): void
