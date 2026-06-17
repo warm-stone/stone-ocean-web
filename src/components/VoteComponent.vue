@@ -13,14 +13,14 @@
                   fit="cover"
                   shape="square"
                   class="avatar"
-                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                  :src="API_BASE_URL + API_URLS.file.load(member.coverUrl)"
                 />
               </template>
               <template v-else>
                 <img
                   class="item-img"
                   v-if="member.coverUrl"
-                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                  :src="API_BASE_URL + API_URLS.file.load(member.coverUrl)"
                   alt="头像"
                 />
               </template>

@@ -31,7 +31,7 @@
           >
             <img
               v-if="registerForm.avatarUrl"
-              :src="API_BASE_URL + API_URLS.file.lode(registerForm.avatarUrl)"
+              :src="API_BASE_URL + API_URLS.file.load(registerForm.avatarUrl)"
               class="avatar"
               alt="头像"
             />

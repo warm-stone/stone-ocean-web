@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 
 export const API_IMG_URL = (url: string) => {
-  return API_BASE_URL + API_URLS.file.lode(url)
+  return API_BASE_URL + API_URLS.file.load(url)
 }
 // 1. 集中管理可请求的URL（基础URL + 接口路径）
 export const API_BASE_URL = import.meta.env.VITE_BASE_URL
@@ -12,7 +12,7 @@ export const API_BASE_URL = import.meta.env.VITE_BASE_URL
 export const API_URLS = {
   // 示例接口路径，根据实际需求修改
   file: {
-    lode: (img: string) => `/file/load/${img}`,
+    load: (img: string) => `/file/load/${img}`,
     upload: '/file/upload',
   },
   oauth2Login: {
