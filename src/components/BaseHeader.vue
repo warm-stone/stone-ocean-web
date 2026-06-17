@@ -2,7 +2,7 @@
 import { useDark, useToggle } from '@vueuse/core'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import Login from '@/components/CommonLogin.vue'
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const isDark = useDark()
@@ -71,13 +71,19 @@ const blogUrl = 'https://warm-stone.github.io/hexo-blog/'
 
 // 文本循环
 const fishingTitle = ref('🐟🐠🐳')
+let loopIntervalId: ReturnType<typeof setInterval> | null = null
 function loopDisplayText(interval: number = 500): void {
+  if (loopIntervalId) clearInterval(loopIntervalId)
   // 设置定时器循环变换
-  setInterval(() => {
+  loopIntervalId = setInterval(() => {
     // 将第一个字符移到末尾
     fishingTitle.value = fishingTitle.value.slice(2) + fishingTitle.value.slice(0, 2)
   }, interval)
 }
+
+onUnmounted(() => {
+  if (loopIntervalId) clearInterval(loopIntervalId)
+})
 </script>
 
 <template>
