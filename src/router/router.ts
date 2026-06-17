@@ -51,6 +51,11 @@ const router = createRouter({
       name: 'heart',
       component: () => import('@/views/BeatingHeart.vue'),
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFound.vue'),
+    },
   ],
 })
 
