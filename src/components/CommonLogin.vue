@@ -64,7 +64,10 @@ const handleCommand = (command: string) => {
     window.location.href = '/user/modify'
   }
   if (command == 'logout') {
-    useSelfStore().clearUserInfo()
+    // 先通知服务端撤销令牌（best-effort），失败也继续清除本地状态
+    post(API_URLS.token.logout).catch(() => {}).finally(() => {
+      useSelfStore().clearUserInfo()
+    })
   }
 }
 

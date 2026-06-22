@@ -22,6 +22,10 @@ export const API_URLS = {
   auth: {
     login: '/auth/login',
   },
+  token: {
+    refresh: '/token/token',
+    logout: '/token/logout',
+  },
   user: {
     add: '/user/add',
     self_info: '/user/selfInfo',
@@ -76,6 +80,15 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
+// 令牌刷新状态：防止并发刷新与刷新死循环
+let isRefreshing = false
+let refreshQueue: Array<(token: string | null, error?: unknown) => void> = []
+
+const flushRefreshQueue = (token: string | null, error?: unknown) => {
+  refreshQueue.forEach((cb) => cb(token, error))
+  refreshQueue = []
+}
+
 // 3. 基础错误处理（响应拦截器）
 apiClient.interceptors.response.use(
   (response) => {
@@ -86,18 +99,72 @@ apiClient.interceptors.response.use(
     return response
   },
   (error: AxiosError) => {
-    // 4. 错误提示
-    let errorMessage = '请求失败，请稍后重试'
+    const originalRequest = error.config as
+      | (AxiosRequestConfig & { _isRefresh?: boolean; _retried?: boolean })
+      | undefined
 
+    // 401：尝试用当前令牌刷新，成功后重放原请求
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._isRefresh &&
+      !originalRequest._retried
+    ) {
+      const store = useSelfStore()
+
+      // 无可用令牌，无法刷新
+      if (!store.token) {
+        store.clearUserInfo()
+        ElMessage.error('登录已过期，请重新登录')
+        return Promise.reject(new Error('登录已过期，请重新登录'))
+      }
+
+      // 已有刷新进行中：排队等待刷新完成后重放
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          refreshQueue.push((token, err) => {
+            if (err || !token) {
+              reject(err || new Error('登录已过期，请重新登录'))
+              return
+            }
+            originalRequest._retried = true
+            resolve(apiClient(originalRequest))
+          })
+        })
+      }
+
+      // 发起刷新：标记本次请求，刷新请求自身 401 不再触发刷新
+      originalRequest._retried = true
+      isRefreshing = true
+      return apiClient
+        .post(API_URLS.token.refresh, undefined, { _isRefresh: true } as AxiosRequestConfig)
+        .then((res) => {
+          const newToken: string | undefined = res.data?.data
+          if (!newToken) throw new Error('刷新令牌失败')
+          store.setToken(newToken)
+          flushRefreshQueue(newToken)
+          // 重放原请求：request 拦截器会用 store 里的新令牌自动附上 Authorization
+          return apiClient(originalRequest)
+        })
+        .catch((err) => {
+          flushRefreshQueue(null, err)
+          store.clearUserInfo()
+          ElMessage.error('登录已过期，请重新登录')
+          return Promise.reject(new Error('登录已过期，请重新登录'))
+        })
+        .finally(() => {
+          isRefreshing = false
+        })
+    }
+
+    // 不可刷新的错误：沿用原有处理
+    let errorMessage = '请求失败，请稍后重试'
     if (error.response) {
-      // 服务器返回错误
       const { status } = error.response
       switch (status) {
         case 401:
           errorMessage = '鉴权错误，请登录'
-          // 清除无效token
           useSelfStore().clearUserInfo()
-          // 可添加跳转登录页逻辑：window.location.href = '/login'
           break
         case 403:
           errorMessage = '没有权限访问该资源'
@@ -112,11 +179,8 @@ apiClient.interceptors.response.use(
           errorMessage = `请求错误 (${status})`
       }
     } else if (error.request) {
-      // 网络错误（无响应）
       errorMessage = '网络连接失败，请检查网络'
     }
-
-    // 输出错误信息（可替换为UI提示，如Toast）
     console.error('[API Error]', errorMessage, error)
     ElMessage.error(errorMessage)
     return Promise.reject(new Error(errorMessage))
