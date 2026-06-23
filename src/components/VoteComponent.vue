@@ -56,7 +56,7 @@
                 <el-button
                   type="primary"
                   plain
-                  @click.stop.once="voteToMember(member.id, 1, member)"
+                  @click.stop="voteToMember(member.id, 1, member)"
                   style="max-width: 60px"
                 >
                   <template v-if="rankList.agreeName">{{ rankList.agreeName }}</template>
@@ -65,7 +65,7 @@
                 <el-button
                   type="danger"
                   plain
-                  @click.stop.once="voteToMember(member.id, -1, member)"
+                  @click.stop="voteToMember(member.id, -1, member)"
                   style="max-width: 60px"
                 >
                   <template v-if="rankList.disagreeName">{{ rankList.disagreeName }}</template>
