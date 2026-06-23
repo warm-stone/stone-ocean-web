@@ -286,8 +286,16 @@ async function voteToMember(id: number | string, voteCount: number, member: Rank
     rankMemberId: id,
     voteCount: voteCount,
   } as VoteRecord
-  await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
-  emit('vote-updated', id, voteCount)
+  try {
+    // post() 在业务失败(statusCode!=200)或 HTTP 错误时会抛出异常，
+    // 且网络层响应拦截器已通过 ElMessage.error 提示具体错误信息，
+    // 故此处仅在请求成功时更新 UI 并给予成功反馈，避免重复弹窗。
+    await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
+    emit('vote-updated', id, voteCount)
+    ElMessage.success(voteCount > 0 ? '投票成功' : '操作成功')
+  } catch (error) {
+    console.error('投票失败:', error)
+  }
 }
 
 function handleVoteUpdated(memberId: number | string, voteCount: number) {
