@@ -1,11 +1,10 @@
-// import './assets/main.css'
-
 // import 'element-plus/theme-chalk/dark/css-vars.css'
 // import 'element-plus/dist/index.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/router.ts'
 import ElementPlus from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 // import { tryIpv6 } from '@/utils/ipv6.ts' // ipv6 域名优先
@@ -26,4 +25,10 @@ app.use(pinia).use(router).use(
     zIndex: 3000,
   },
 ) // 使用中文语言包（可选）
+
+app.config.errorHandler = (err, _instance, info) => {
+  console.error('[Global Error]', err, info)
+  ElMessage.error('应用发生错误，请刷新页面重试')
+}
+
 app.mount('#app')

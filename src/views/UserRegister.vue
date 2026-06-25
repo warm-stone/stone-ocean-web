@@ -23,7 +23,8 @@
         <el-form-item label="头像" prop="avatarUrl">
           <el-upload
             class="avatar-uploader"
-            :action="API_BASE_URL + API_URLS.file.upload"
+            :action="uploadAction"
+            :headers="uploadHeaders"
             :limit="1"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
@@ -31,7 +32,7 @@
           >
             <img
               v-if="registerForm.avatarUrl"
-              :src="API_BASE_URL + API_URLS.file.lode(registerForm.avatarUrl)"
+              :src="API_BASE_URL + API_URLS.file.load(registerForm.avatarUrl)"
               class="avatar"
               alt="头像"
             />
@@ -48,6 +49,16 @@
         <!-- 登录账号 -->
         <el-form-item label="账号" prop="account">
           <el-input v-model="registerForm.account" placeholder="请输入登录账号" maxlength="20" />
+        </el-form-item>
+        <!-- 原密码 -->
+        <el-form-item v-if="behavior == 'modify'" label="原密码" prop="oldPassword">
+          <el-input
+            v-model="registerForm.oldPassword"
+            type="password"
+            placeholder="修改密码时需输入原密码"
+            show-password
+            maxlength="20"
+          />
         </el-form-item>
         <!-- 密码 -->
         <el-form-item label="密码" prop="password">
@@ -128,8 +139,8 @@ import { Plus } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { API_BASE_URL, API_URLS, post } from '@/utils/network.ts'
 import type { ApiResult, AuthorizationDTO, User } from '@/utils/interfaces.ts'
-import { beforeAvatarUpload } from '@/utils/img.ts'
 import { useSelfStore } from '@/utils/piniaCache.ts'
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 // 表单引用
 const registerFormRef = ref()
 
@@ -147,6 +158,7 @@ const behavior = route.params.behavior
 interface UserFormData {
   account: string | null
   password: string | null
+  oldPassword: string | null
   confirmPassword: string | null
   nickname: string | null
   email: string | null
@@ -159,6 +171,7 @@ interface UserFormData {
 const registerForm = reactive<UserFormData>({
   account: null,
   password: null,
+  oldPassword: null,
   confirmPassword: null,
   nickname: null,
   email: null,
@@ -169,6 +182,9 @@ const registerForm = reactive<UserFormData>({
 })
 
 const selfStore = useSelfStore()
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload } = useFileUpload((fileUrl) => {
+  registerForm.avatarUrl = fileUrl
+})
 onMounted(async () => {
   if (behavior == 'modify') {
     const response = await post<ApiResult<User>>(API_URLS.user.self_info)
@@ -196,8 +212,30 @@ const registerRules = reactive({
     { min: 4, max: 20, message: '账号长度在 4 到 20 个字符', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
+    {
+      validator: (_rule: unknown, value: string, callback: (err?: Error) => void) => {
+        if (behavior != 'modify' && (!value || value.length < 6)) {
+          callback(new Error('请输入至少 6 位的密码'))
+        } else if (value && (value.length < 6 || value.length > 20)) {
+          callback(new Error('密码长度为 6 ~ 20 位'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
+  ],
+  oldPassword: [
+    {
+      validator: (_rule: unknown, value: string, callback: (err?: Error) => void) => {
+        if (behavior == 'modify' && registerForm.password && (!value || !value.length)) {
+          callback(new Error('修改密码需输入原密码'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur',
+    },
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -241,16 +279,6 @@ const registerRules = reactive({
   ],
 })
 
-// 处理头像上传成功
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  if (response.statusCode === 200) {
-    registerForm.avatarUrl = response.data
-    ElMessage.success('头像上传成功')
-  } else {
-    ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
-  }
-}
-
 // 提交表单
 const handleSubmit = async () => {
   if (!registerFormRef.value) return
@@ -262,6 +290,7 @@ const handleSubmit = async () => {
     const submitData = {
       account: registerForm.account,
       passwordHash: registerForm.password, // 注意：实际项目中应该在前端进行加密
+      oldPassword: registerForm.oldPassword,
       nickname: registerForm.nickname,
       email: registerForm.email,
       phone: registerForm.phone,

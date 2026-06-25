@@ -13,14 +13,14 @@
                   fit="cover"
                   shape="square"
                   class="avatar"
-                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                  :src="API_BASE_URL + API_URLS.file.load(member.coverUrl)"
                 />
               </template>
               <template v-else>
                 <img
                   class="item-img"
                   v-if="member.coverUrl"
-                  :src="API_BASE_URL + API_URLS.file.lode(member.coverUrl)"
+                  :src="API_BASE_URL + API_URLS.file.load(member.coverUrl)"
                   alt="头像"
                 />
               </template>
@@ -56,7 +56,7 @@
                 <el-button
                   type="primary"
                   plain
-                  @click.stop.once="voteToMember(member.id, 1, member)"
+                  @click.stop="voteToMember(member.id, 1, member)"
                   style="max-width: 60px"
                 >
                   <template v-if="rankList.agreeName">{{ rankList.agreeName }}</template>
@@ -65,7 +65,7 @@
                 <el-button
                   type="danger"
                   plain
-                  @click.stop.once="voteToMember(member.id, -1, member)"
+                  @click.stop="voteToMember(member.id, -1, member)"
                   style="max-width: 60px"
                 >
                   <template v-if="rankList.disagreeName">{{ rankList.disagreeName }}</template>
@@ -81,9 +81,12 @@
           >
             <el-tab-pane label="评论。。。" name="subMember">
               <vote-component
+                v-if="canRecurse"
                 :rank-list="rankList"
                 :rank-members="getSubMembers(member.id)"
                 :use-el-avatar="false"
+                :depth="depth + 1"
+                @vote-updated="handleVoteUpdated"
               />
 
               <el-button type="primary" class="!ml-0" plain @click="showAddDialog(member)">
@@ -185,10 +188,10 @@ import type {
 } from '@/utils/interfaces.ts'
 import { ElMessage, ElUpload, type TabsPaneContext } from 'element-plus'
 import { API_BASE_URL, API_URLS, get, post } from '@/utils/network.ts'
-import { beforeAvatarUpload, handleUploadError } from '@/utils/img.ts'
 import { Plus } from '@element-plus/icons-vue'
 import { useSelfStore } from '@/utils/piniaCache.ts'
 import { getByUserId } from '@/utils/cacheTool.ts'
+import { useFileUpload } from '@/composables/useFileUpload.ts'
 
 const props = defineProps({
   rankMembers: {
@@ -203,12 +206,21 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  depth: {
+    type: Number,
+    default: 0,
+  },
 })
 
+const MAX_DEPTH = 3
+const canRecurse = computed(() => props.depth < MAX_DEPTH)
+
+const emit = defineEmits<{
+  (e: 'vote-updated', memberId: number | string, voteCount: number): void
+}>()
+
 onMounted(async () => {
-  for (const member of sortedRankMembers.value) {
-    await loadUserCache(member.creator)
-  }
+  await Promise.all(sortedRankMembers.value.map(member => loadUserCache(member.creator)))
 })
 
 watch(
@@ -216,9 +228,7 @@ watch(
   async (newVal) => {
     if (newVal.length > 0) {
       // 确保有值时再执行
-      for (const member of newVal) {
-        await loadUserCache(member.creator)
-      }
+      await Promise.all(newVal.map(member => loadUserCache(member.creator)))
     }
   },
   { immediate: true }, // 初始化时立即执行一次
@@ -276,8 +286,26 @@ async function voteToMember(id: number | string, voteCount: number, member: Rank
     rankMemberId: id,
     voteCount: voteCount,
   } as VoteRecord
-  await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
-  member.scoreSum += voteCount
+  try {
+    // post() 在业务失败(statusCode!=200)或 HTTP 错误时会抛出异常，
+    // 且网络层响应拦截器已通过 ElMessage.error 提示具体错误信息，
+    // 故此处仅在请求成功时更新 UI 并给予成功反馈，避免重复弹窗。
+    await post<ApiResult<object>>(API_URLS.vote.vote, voteData)
+    emit('vote-updated', id, voteCount)
+    ElMessage.success(voteCount > 0 ? '投票成功' : '操作成功')
+  } catch (error) {
+    console.error('投票失败:', error)
+  }
+}
+
+function handleVoteUpdated(memberId: number | string, voteCount: number) {
+  for (const members of Object.values(subMembers.value)) {
+    const member = members.find((m) => m.id === memberId)
+    if (member) {
+      member.scoreSum += voteCount
+      return
+    }
+  }
 }
 
 // endregion
@@ -302,9 +330,7 @@ async function reqVoteRecordSumInfo(pane: TabsPaneContext, id: number | string, 
   voteRecordSumInfo.value[id] = response.data
   // 加载用户缓存
   const userIds = response.data.map((item) => item.creator) // 假设 creator 是用户ID
-  for (const userId of userIds) {
-    await loadUserCache(userId) // 循环加载每个用户信息
-  }
+  await Promise.all(userIds.map(userId => loadUserCache(userId)))
 }
 
 // endregion
@@ -333,27 +359,9 @@ async function addMember() {
 
 // endregion
 
-const userStore = useSelfStore()
-// region 图片上传
-// 实际图片上传接口地址
-const uploadAction = API_BASE_URL + API_URLS.file.upload
-
-// 2. 上传请求头（自动携带Bearer token）
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.token}`, // 核心：添加认证头
-}))
-
-// 处理头像上传成功
-const handleAvatarSuccess = (response: ApiResult<string>) => {
-  if (response.statusCode === 200) {
-    newRankMember.value.coverUrl = response.data
-    ElMessage.success('头像上传成功')
-  } else {
-    ElMessage.error('头像上传失败：' + (response.message || '未知错误'))
-  }
-}
-
-// endregion
+const { uploadAction, uploadHeaders, handleAvatarSuccess, beforeAvatarUpload, handleUploadError } = useFileUpload((fileUrl) => {
+  newRankMember.value.coverUrl = fileUrl
+})
 
 // region 表单校验
 

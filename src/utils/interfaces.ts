@@ -11,6 +11,8 @@ export interface User {
   createdTime?: Date
   updatedTime?: Date
   deletedTime?: Date | null
+  oldPassword?: string
+  tokenVersion?: number
 }
 
 export interface RankMember {

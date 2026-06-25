@@ -64,7 +64,10 @@ const handleCommand = (command: string) => {
     window.location.href = '/user/modify'
   }
   if (command == 'logout') {
-    useSelfStore().clearUserInfo()
+    // 先通知服务端撤销令牌（best-effort），失败也继续清除本地状态
+    post(API_URLS.token.logout).catch(() => {}).finally(() => {
+      useSelfStore().clearUserInfo()
+    })
   }
 }
 
@@ -124,41 +127,21 @@ const form = reactive({
   passwordHash: '',
 })
 
-function stringToBase64(str: string): string {
-  // 1. 将字符串转为UTF-8编码的Uint8Array（处理非ASCII字符）
-  const encoder = new TextEncoder() // 浏览器内置API，用于将字符串编码为UTF-8的Uint8Array
-  const uint8Array = encoder.encode(str)
-
-  // 2. 将Uint8Array转为二进制字符串（btoa需要的输入格式）
-  const binaryStr = String.fromCharCode(...uint8Array)
-
-  // 3. 用btoa转换为Base64
-  return btoa(binaryStr)
-}
-
 const selfStore = useSelfStore()
 
 async function login() {
   if (!userAccount.value) return
-  userAccount.value.validate()
-  const authString = `${form.account}:${form.passwordHash}`
-  // 发送登录请求
+  await userAccount.value.validate()
+  // 发送登录请求（JSON body）
   const response = await post<ApiResult<AuthorizationDTO>>(
-    API_URLS.user.login,
-    {},
-    {
-      headers: {
-        Authorization: `Basic ${stringToBase64(authString)}`,
-        'Content-Type': 'application/json',
-      },
-    },
+    API_URLS.auth.login,
+    { account: form.account, password: form.passwordHash },
   )
 
   const { token, user } = response.data
 
   selfStore.setUserInfo(user, token)
 
-  // 注册成功处理
   ElMessage.success('登录成功')
   window.location.reload()
 }
