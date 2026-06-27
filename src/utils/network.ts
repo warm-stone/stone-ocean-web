@@ -2,6 +2,7 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import { useSelfStore } from '@/utils/piniaCache.ts'
+import type { GameCommand } from '@/game/types.ts'
 
 export const API_IMG_URL = (url: string) => {
   return API_BASE_URL + API_URLS.file.load(url)
@@ -52,6 +53,50 @@ export const API_URLS = {
     get: (id: string | number) => `/biographic/get/${id}`,
   },
 
+  // 游戏特性第一期 (plan §6.4 / 设计 §4.4)
+  // GET 调用需显式传 { userAuth: true } (现有拦截器仅 POST 自动注入 Authorization)。
+  game: {
+    // POST /auth/game-token (JWT) → 签发 gst
+    gameToken: '/auth/game-token',
+    // 大厅
+    createRoom: '/game/lobby/room', // POST
+    listRooms: '/game/lobby/rooms', // GET (userAuth:true)
+    // 房间内命令 (POST, 走 gameCommand 自动注入 clientRequestId)
+    joinRoom: (id: string | number) => `/game/room/${id}/join`,
+    switchRole: (id: string | number) => `/game/room/${id}/switch-role`,
+    start: (id: string | number) => `/game/room/${id}/start`,
+    bid: (id: string | number) => `/game/room/${id}/bid`,
+    play: (id: string | number) => `/game/room/${id}/play`,
+    pass: (id: string | number) => `/game/room/${id}/pass`,
+    leave: (id: string | number) => `/game/room/${id}/leave`,
+    transferHost: (id: string | number) => `/game/room/${id}/transfer-host`,
+    kick: (id: string | number) => `/game/room/${id}/kick`,
+    dissolve: (id: string | number) => `/game/room/${id}/dissolve`,
+    // 全量快照 (v1.1, GET userAuth:true) → RoomSnapshot
+    snapshot: (id: string | number) => `/game/room/${id}/snapshot`,
+    // 离线 sendBeacon (POST, gst 在 body, 无 Authorization)
+    offline: '/game/room/offline',
+    // 猜谜
+    guessQuestion: '/game/guess/question', // POST
+    guessRandom: '/game/guess/random', // GET (userAuth:true)
+    guessAnswer: '/game/guess/answer', // POST
+    guessPage: (page: number, size: number) => `/game/guess/page?page=${page}&size=${size}`, // GET (userAuth:true)
+  },
+
+}
+
+// 后端 ApiResponse<T> (entity/ApiResponse.java: { statusCode, message, data })。
+// 现有响应拦截器在 statusCode!=200 时抛错; 成功时 post/get 返回该对象。
+export interface ApiResponse<T = unknown> {
+  statusCode: number
+  message: string
+  data: T
+}
+
+/** 签发命令所用的 game token 响应 (GameTokenDTO: { gst, expireAt })。 */
+export interface GameTokenDTO {
+  gst: string
+  expireAt: string
 }
 
 // 创建axios实例
@@ -191,9 +236,12 @@ apiClient.interceptors.response.use(
 /**
  * GET请求
  * @param url 接口路径
- * @param config 额外配置
+ * @param config 额外配置 (GET 鉴权需显式 { userAuth: true })
  */
-export const get = async <T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+export const get = async <T = unknown>(
+  url: string,
+  config?: AxiosRequestConfig & { userAuth?: boolean },
+): Promise<T> => {
   const response: AxiosResponse<T> = await apiClient.get(url, config)
   return response.data
 }
@@ -215,3 +263,37 @@ export const post = async <T = unknown>(
 
 // 导出实例（如需使用更多axios功能）
 export default apiClient
+
+// ---------------------------------------------------------------------------
+// 游戏命令 helper (设计 §4.4 / plan §6.4)
+// ---------------------------------------------------------------------------
+
+/**
+ * 生成 clientRequestId (命令幂等键, 后端 Caffeine 去重)。
+ * 优先 crypto.randomUUID(); 不可用时降级为 时间戳+随机串。
+ */
+export function genClientRequestId(): string {
+  try {
+    const g: typeof globalThis = globalThis as unknown as typeof globalThis
+    if (typeof g !== 'undefined' && g.crypto && typeof g.crypto.randomUUID === 'function') {
+      return g.crypto.randomUUID()
+    }
+  } catch {
+    /* ignore */
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+/**
+ * 发送游戏命令: 自动注入 clientRequestId (若 cmd 未提供), 走 POST (自动带 Authorization)。
+ * 复用 401 刷新队列 (isRefreshing + refreshQueue), 与 post 一致。
+ * @param path 接口路径 (如 API_URLS.game.play(roomId))
+ * @param cmd  GameCommand (type + 子字段; clientRequestId/userId 由调用方提供或自动补)
+ */
+export const gameCommand = async <T = unknown>(
+  path: string,
+  cmd: GameCommand,
+): Promise<ApiResponse<T>> => {
+  const enriched = { ...cmd, clientRequestId: cmd.clientRequestId || genClientRequestId() } as GameCommand
+  return post<ApiResponse<T>>(path, enriched)
+}
