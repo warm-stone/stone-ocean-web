@@ -51,6 +51,12 @@ const router = createRouter({
       component: () => import('@/views/BeatingHeart.vue'),
     },
     {
+      path: '/invite',
+      name: 'invite',
+      component: () => import('@/views/WeddingInvitation.vue'),
+      meta: { hideHeader: true },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFound.vue'),
