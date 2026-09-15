@@ -142,6 +142,14 @@
             <p class="info-value">{{ CEREMONY_TIME }}</p>
           </div>
         </div>
+        <div class="info-row">
+          <span class="info-icon">✦</span>
+          <div class="info-body">
+            <p class="info-label">婚宴地点</p>
+            <p class="info-value">{{ VENUE }}</p>
+            <p class="info-value venue-address">{{ VENUE_ADDRESS }}</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -221,6 +229,8 @@ const GROOM = '胡志强'
 const WEDDING_DATE = '2026.10.03' // 婚礼日期
 const WEEKDAY = '星期六'
 const CEREMONY_TIME = '12:08' // TODO: 婚宴时间(吉时)
+const VENUE = '乐安酒店' // 婚宴地点
+const VENUE_ADDRESS = '山东惠民乐安一路乐安花苑小区西门西南60米' // 婚宴地址
 // ========================================
 
 const src = (name: string) => `${import.meta.env.BASE_URL}invite/${name}.jpg`
@@ -989,6 +999,12 @@ onUnmounted(() => {
   font-size: 16px;
   color: var(--ink);
   letter-spacing: 1px;
+}
+
+.venue-address {
+  margin-top: 4px;
+  line-height: 1.7;
+  color: #6b5d58;
 }
 
 /* ===== 相册 ===== */
