@@ -1,5 +1,27 @@
 <template>
   <div class="invite">
+    <!-- 背景音乐：请将《简单爱》mp3 放到 public/music/simple-love.mp3 -->
+    <audio
+      ref="audioRef"
+      :src="musicSrc"
+      loop
+      preload="auto"
+      @play="playing = true"
+      @pause="playing = false"
+      @error="onAudioError"
+    />
+    <button
+      class="music-btn"
+      :class="{ playing }"
+      type="button"
+      :title="playing ? '关闭背景音乐' : '开启背景音乐'"
+      aria-label="播放或暂停背景音乐"
+      @click="toggleMusic"
+    >
+      <span class="disc">♫</span>
+    </button>
+    <span v-if="mutedPending" class="music-hint">轻触屏幕，开启背景音乐 ♪</span>
+
     <!-- 封面 -->
     <section class="cover">
       <img class="cover-bg" :src="coverSrc" alt="婚纱照封面" />
@@ -19,15 +41,32 @@
           🌸
         </span>
       </div>
+      <div class="hearts" aria-hidden="true">
+        <span
+          v-for="(h, i) in hearts"
+          :key="i"
+          class="heart"
+          :style="{
+            left: h.left,
+            animationDelay: h.delay,
+            animationDuration: h.dur,
+            fontSize: h.size,
+          }"
+        >
+          💕
+        </span>
+      </div>
       <div class="cover-content">
         <p class="cover-eng">WE ARE GETTING MARRIED</p>
         <h1 class="cover-names">
           <span class="name">{{ BRIDE }}</span>
-          <span class="amp">&</span>
+          <span class="hrt">❤</span>
           <span class="name">{{ GROOM }}</span>
         </h1>
         <p class="cover-date">{{ WEDDING_DATE }}</p>
         <p class="cover-sub">一生一世 · 只愿有你</p>
+        <span class="sparkle sp-1" aria-hidden="true">✨</span>
+        <span class="sparkle sp-2" aria-hidden="true">✨</span>
         <div class="scroll-cue">
           <span>向下滑动</span>
           <i class="chevron">⌄</i>
@@ -38,12 +77,17 @@
     <!-- 引言 -->
     <section class="intro section-pad reveal">
       <p class="orn">❀</p>
-      <p class="quote">
-        于千万人之中，遇见你所遇见的人<br />
-        于千万年之中，时间无涯的荒野里<br />
-        没有早一步，也没有晚一步<br />
-        刚好赶上了
-      </p>
+      <div class="float-poem fp-intro" aria-label="开篇诗词">
+        <p v-for="(line, li) in openingPoem" :key="li" class="float-line">
+          <span
+            v-for="(fc, ci) in line.chars"
+            :key="ci"
+            class="float-char"
+            :style="{ animationDelay: fc.delay + 'ms' }"
+            >{{ fc.ch }}</span
+          >
+        </p>
+      </div>
       <p class="intro-text">
         我们从相识、相知到相爱，一路走来历经风雨，终于决定携手步入婚姻的殿堂。
         这一天我们期待已久，真诚地邀请您，与我们一同见证这幸福时刻。
@@ -57,21 +101,22 @@
     <section class="countdown section-pad reveal">
       <h2 class="section-title">距离婚礼还有</h2>
       <p class="section-en">COUNTDOWN</p>
+      <div class="divider"><i></i><span>❦</span><i></i></div>
       <div class="cd-boxes">
         <div class="cd-cell">
-          <span class="cd-num">{{ days }}</span>
+          <span :key="days" class="cd-num">{{ days }}</span>
           <span class="cd-label">天</span>
         </div>
         <div class="cd-cell">
-          <span class="cd-num">{{ pad(hours) }}</span>
+          <span :key="hours" class="cd-num">{{ pad(hours) }}</span>
           <span class="cd-label">时</span>
         </div>
         <div class="cd-cell">
-          <span class="cd-num">{{ pad(minutes) }}</span>
+          <span :key="minutes" class="cd-num">{{ pad(minutes) }}</span>
           <span class="cd-label">分</span>
         </div>
         <div class="cd-cell">
-          <span class="cd-num">{{ pad(seconds) }}</span>
+          <span :key="seconds" class="cd-num">{{ pad(seconds) }}</span>
           <span class="cd-label">秒</span>
         </div>
       </div>
@@ -81,6 +126,7 @@
     <section class="info section-pad reveal">
       <h2 class="section-title">婚礼信息</h2>
       <p class="section-en">WEDDING INFORMATION</p>
+      <div class="divider"><i></i><span>❦</span><i></i></div>
       <div class="info-card">
         <div class="info-row">
           <span class="info-icon">✦</span>
@@ -103,18 +149,36 @@
     <section class="album section-pad reveal">
       <h2 class="section-title">甜蜜瞬间</h2>
       <p class="section-en">PRECIOUS MOMENTS</p>
-      <div
-        v-for="(seg, i) in gallery"
-        :key="i"
-        :class="['segment', seg.layout === 'wide' ? 'seg-wide' : 'seg-masonry']"
-      >
+      <div class="divider"><i></i><span>❦</span><i></i></div>
+      <div class="float-poem fp-album" aria-label="甜蜜瞬间诗词">
+        <p v-for="(line, li) in sweetPoem" :key="li" class="float-line">
+          <span
+            v-for="(fc, ci) in line.chars"
+            :key="ci"
+            class="float-char"
+            :style="{ animationDelay: fc.delay + 'ms' }"
+            >{{ fc.ch }}</span
+          >
+        </p>
+      </div>
+      <div v-for="(seg, i) in gallery" :key="i" :class="['segment', 'seg-' + seg.layout]">
         <img
-          v-for="ph in seg.photos"
-          :key="ph.src"
-          :src="ph.src"
+          v-if="seg.layout === 'wide'"
+          :src="seg.photos[0]?.src"
           :alt="`婚纱照 ${i + 1}`"
           loading="lazy"
         />
+        <div v-else class="seg-cols">
+          <div v-for="(col, ci) in seg.cols" :key="ci" class="seg-col">
+            <img
+              v-for="ph in col"
+              :key="ph.src"
+              :src="ph.src"
+              :alt="`婚纱照 ${i + 1}`"
+              loading="lazy"
+            />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -122,10 +186,23 @@
     <section class="closing section-pad reveal">
       <p class="orn">❀</p>
       <h2 class="section-title">诚挚邀请</h2>
+      <p class="section-en">WITH OUR BEST WISHES</p>
+      <div class="divider"><i></i><span>❦</span><i></i></div>
       <p class="closing-text">
         您的出席，是我们的荣幸<br />
         您的祝福，是我们的动力
       </p>
+      <div class="float-poem fp-closing" aria-label="邀请诗词">
+        <p v-for="(line, li) in invitePoem" :key="li" class="float-line">
+          <span
+            v-for="(fc, ci) in line.chars"
+            :key="ci"
+            class="float-char"
+            :style="{ animationDelay: fc.delay + 'ms' }"
+            >{{ fc.ch }}</span
+          >
+        </p>
+      </div>
       <p class="closing-names">{{ BRIDE }} &amp; {{ GROOM }}</p>
       <p class="closing-date">{{ WEDDING_DATE }} · {{ WEEKDAY }}</p>
       <p class="closing-bye">我们婚礼见 ❤</p>
@@ -149,6 +226,7 @@ const CEREMONY_TIME = '12:08' // TODO: 婚宴时间(吉时)
 const src = (name: string) => `${import.meta.env.BASE_URL}invite/${name}.jpg`
 const coverSrc = src('photo-02')
 const introSrc = src('photo-01')
+const musicSrc = `${import.meta.env.BASE_URL}music/simple-love.mp3`
 
 interface Photo {
   src: string
@@ -157,21 +235,59 @@ interface Photo {
 interface AlbumSeg {
   layout: 'wide' | 'masonry'
   photos: Photo[]
+  cols: Photo[][] // masonry：左右两列拆分
 }
 
 const P = (name: string): Photo => ({ src: src(name) })
 
-// 相册编排：竖版照片两列瀑布流，横版照片整幅展示，穿插排布
+// 瀑布流段：照片按奇偶交替拆入左右两列（flex 双列，跨浏览器/微信 WebView 稳定）
+const masonry = (names: string[]): AlbumSeg => {
+  const photos = names.map(P)
+  const cols: Photo[][] = [[], []]
+  photos.forEach((ph, idx) => {
+    cols[idx % 2]!.push(ph)
+  })
+  return { layout: 'masonry', photos, cols }
+}
+
+const wide = (name: string): AlbumSeg => ({ layout: 'wide', photos: [P(name)], cols: [] })
+
+// 相册编排：竖版照片两列瀑布流，横版照片整幅展示
 const gallery: AlbumSeg[] = [
-  { layout: 'masonry', photos: [P('photo-03'), P('photo-04'), P('photo-06'), P('photo-08')] },
-  { layout: 'wide', photos: [P('photo-05')] },
-  { layout: 'masonry', photos: [P('photo-09'), P('photo-10'), P('photo-12'), P('photo-14')] },
-  { layout: 'wide', photos: [P('photo-07')] },
-  { layout: 'masonry', photos: [P('photo-15'), P('photo-16'), P('photo-17'), P('photo-18')] },
-  { layout: 'wide', photos: [P('photo-11')] },
-  { layout: 'masonry', photos: [P('photo-19'), P('photo-20'), P('photo-21')] },
-  { layout: 'wide', photos: [P('photo-13')] },
+  masonry(['photo-03', 'photo-04', 'photo-06', 'photo-08']),
+  wide('photo-05'),
+  masonry(['photo-09', 'photo-10', 'photo-12', 'photo-14']),
+  wide('photo-07'),
+  masonry(['photo-15', 'photo-16', 'photo-17', 'photo-18']),
+  wide('photo-11'),
+  masonry(['photo-20', 'photo-21']),
+  wide('photo-13'),
 ]
+
+// ====== 章节诗词（悬浮文字） ======
+interface FloatChar {
+  ch: string
+  delay: number
+}
+
+interface PoemLine {
+  chars: FloatChar[]
+}
+
+// 将诗句按字拆分，每字错开动画延迟，形成波浪悬浮效果
+const poem = (lines: string[]): PoemLine[] => {
+  let n = 0
+  return lines.map((line) => ({
+    chars: line.split('').map((ch) => ({ ch, delay: n++ * 90 })),
+  }))
+}
+
+// 开头：执子之手，与子偕老
+const openingPoem = poem(['死生契阔，与子成说', '执子之手，与子偕老'])
+// 甜蜜瞬间：鹊桥仙
+const sweetPoem = poem(['金风玉露一相逢，便胜却人间无数', '两情若是久长时，又岂在朝朝暮暮'])
+// 邀请：愿得一心人，白头不相离
+const invitePoem = poem(['愿得一心人，白头不相离'])
 
 // 飘落花瓣装饰
 const petals = Array.from({ length: 8 }, (_, i) => ({
@@ -179,6 +295,14 @@ const petals = Array.from({ length: 8 }, (_, i) => ({
   delay: `${(i % 5) * 1.6}s`,
   dur: `${9 + (i % 4) * 2}s`,
   size: `${15 + (i % 3) * 6}px`,
+}))
+
+// 升腾爱心装饰
+const hearts = Array.from({ length: 5 }, (_, i) => ({
+  left: `${(i * 19 + 7) % 100}%`,
+  delay: `${(i % 4) * 2.2}s`,
+  dur: `${10 + (i % 3) * 2.5}s`,
+  size: `${13 + (i % 2) * 7}px`,
 }))
 
 // ====== 倒计时 ======
@@ -193,11 +317,65 @@ const minutes = computed(() => Math.floor(diff.value / 60_000) % 60)
 const seconds = computed(() => Math.floor(diff.value / 1_000) % 60)
 const pad = (n: number) => String(n).padStart(2, '0')
 
+// ====== 背景音乐《简单爱》 ======
+const audioRef = ref<HTMLAudioElement | null>(null)
+const playing = ref(false)
+const mutedPending = ref(false) // 已静音自动播放，等待首次交互恢复声音
+let userToggled = false
+let firstTouchHandler: (() => void) | undefined
+
+const toggleMusic = () => {
+  userToggled = true
+  mutedPending.value = false
+  const audio = audioRef.value
+  if (!audio) return
+  if (playing.value) {
+    audio.pause()
+  } else {
+    audio.muted = false
+    audio.play().catch(() => {
+      // 播放失败通常是音频文件尚未放入 public/music/，静默处理
+      console.warn('[背景音乐] 播放失败，请确认 public/music/simple-love.mp3 存在')
+    })
+  }
+}
+
+const onAudioError = () => {
+  console.warn('[背景音乐] 音频加载失败，请确认 public/music/simple-love.mp3 存在')
+}
+
 // ====== 滚动渐显 ======
 let observer: IntersectionObserver | undefined
 
 onMounted(() => {
   document.title = `婚礼邀请函｜${BRIDE} & ${GROOM}`
+  const audio = audioRef.value
+  if (audio) {
+    audio.volume = 0.5
+    // 默认播放：先尝试有声自动播放；被浏览器拦截时降级为静音自动播放，
+    // 静音播放完成后在首次交互时恢复声音（浏览器要求用户手势才能出声）
+    audio.play().catch(() => {
+      audio.muted = true
+      audio
+        .play()
+        .then(() => {
+          mutedPending.value = true
+        })
+        .catch(() => {})
+    })
+  }
+  // 首次任意点击/触摸时恢复声音（并兜底启动播放）
+  firstTouchHandler = () => {
+    mutedPending.value = false
+    const target = audioRef.value
+    if (!target) return
+    if (!userToggled) {
+      target.muted = false
+      target.play().catch(() => {})
+    }
+  }
+  window.addEventListener('pointerdown', firstTouchHandler, { once: true })
+
   timer = window.setInterval(() => {
     now.value = Date.now()
   }, 1000)
@@ -217,6 +395,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (timer) window.clearInterval(timer)
+  if (firstTouchHandler) window.removeEventListener('pointerdown', firstTouchHandler)
   observer?.disconnect()
 })
 </script>
@@ -260,6 +439,139 @@ onUnmounted(() => {
   font-size: 11px;
   letter-spacing: 4px;
   text-transform: uppercase;
+}
+
+/* 装饰分隔线 */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 22px auto 0;
+  max-width: 240px;
+  color: var(--gold);
+}
+
+.divider i {
+  display: block;
+  height: 1px;
+  width: 74px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+  transform: scaleX(0);
+  transition: transform 0.9s ease 0.15s;
+}
+
+.divider i:last-child {
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+.divider span {
+  opacity: 0;
+  transition: opacity 0.6s ease 0.55s;
+}
+
+.reveal.in-view .divider i {
+  transform: scaleX(1);
+}
+
+.reveal.in-view .divider span {
+  opacity: 1;
+}
+
+/* ===== 背景音乐按钮 ===== */
+.music-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 250, 245, 0.9);
+  color: var(--accent);
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(74, 63, 60, 0.22);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.music-btn:active {
+  transform: scale(0.92);
+}
+
+.music-btn .disc {
+  display: inline-block;
+  line-height: 1;
+}
+
+.music-btn.playing {
+  box-shadow:
+    0 0 0 0 rgba(201, 141, 128, 0.45),
+    0 4px 14px rgba(74, 63, 60, 0.22);
+  animation: pulsering 2s ease-out infinite;
+}
+
+.music-btn.playing .disc {
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulsering {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(201, 141, 128, 0.45),
+      0 4px 14px rgba(74, 63, 60, 0.22);
+  }
+  70% {
+    box-shadow:
+      0 0 0 14px rgba(201, 141, 128, 0),
+      0 4px 14px rgba(74, 63, 60, 0.22);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(201, 141, 128, 0),
+      0 4px 14px rgba(74, 63, 60, 0.22);
+  }
+}
+
+/* 静音自动播放时的提示气泡 */
+.music-hint {
+  position: fixed;
+  top: 32px;
+  right: 74px;
+  z-index: 50;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 250, 245, 0.94);
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 14px rgba(74, 63, 60, 0.18);
+  pointer-events: none;
+  animation: hintIn 0.8s ease both;
+}
+
+@keyframes hintIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* ===== 封面 ===== */
@@ -311,28 +623,51 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
+.cover-content > * {
+  animation: fadeUp 0.9s ease both;
+}
+
 .cover-eng {
   margin: 0 0 26px;
   font-size: 12px;
   letter-spacing: 8px;
   text-transform: uppercase;
   opacity: 0.92;
+  animation-delay: 0.1s;
 }
 
 .cover-names {
   margin: 0;
   display: flex;
   align-items: baseline;
-  gap: 18px;
+  gap: 22px;
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   font-size: clamp(30px, 8vw, 44px);
   letter-spacing: 4px;
+  animation-delay: 0.3s;
 }
 
-.amp {
-  color: #f2c9b8;
-  font-family: serif;
-  font-size: 0.7em;
+.hrt {
+  display: inline-block;
+  color: #f2b8b0;
+  font-size: 0.62em;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.25);
+  }
+  40% {
+    transform: scale(1);
+  }
+  55% {
+    transform: scale(1.2);
+  }
 }
 
 .cover-date {
@@ -340,6 +675,7 @@ onUnmounted(() => {
   font-size: 18px;
   letter-spacing: 6px;
   font-weight: 300;
+  animation-delay: 0.55s;
 }
 
 .cover-date::before,
@@ -354,6 +690,50 @@ onUnmounted(() => {
   font-size: 14px;
   letter-spacing: 6px;
   opacity: 0.9;
+  animation-delay: 0.75s;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 封面星光 */
+.sparkle {
+  position: absolute;
+  animation: twinkle 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.sp-1 {
+  top: 24%;
+  left: 16%;
+  font-size: 18px;
+}
+
+.sp-2 {
+  top: 34%;
+  right: 14%;
+  font-size: 14px;
+  animation-delay: 1.1s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 
 .scroll-cue {
@@ -368,6 +748,7 @@ onUnmounted(() => {
   font-size: 12px;
   letter-spacing: 2px;
   opacity: 0.85;
+  animation-delay: 1.3s;
 }
 
 .chevron {
@@ -387,7 +768,8 @@ onUnmounted(() => {
 }
 
 /* 飘落花瓣 */
-.petals {
+.petals,
+.hearts {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -412,18 +794,85 @@ onUnmounted(() => {
   }
 }
 
+/* 升腾爱心 */
+.heart {
+  position: absolute;
+  bottom: -6%;
+  color: rgba(242, 184, 176, 0.55);
+  animation: rising linear infinite;
+}
+
+@keyframes rising {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-110vh) rotate(20deg);
+  }
+}
+
 /* ===== 引言 ===== */
 .intro {
   text-align: center;
 }
 
-.quote {
-  margin: 0 0 26px;
-  line-height: 2.1;
-  color: var(--accent);
+/* ===== 悬浮诗词 ===== */
+.float-poem {
+  text-align: center;
+}
+
+.float-line {
+  margin: 0 0 8px;
+  line-height: 1.7;
+}
+
+.float-line:last-child {
+  margin-bottom: 0;
+}
+
+.float-char {
+  display: inline-block;
+  margin: 0 2px;
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
-  font-size: 16px;
-  letter-spacing: 2px;
+  animation: floatChar 3.4s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes floatChar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.fp-intro {
+  margin: 0 0 30px;
+}
+
+.fp-intro .float-char {
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.fp-album {
+  margin: 26px 0 0;
+}
+
+.fp-album .float-char {
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.fp-closing {
+  margin: 26px 0 0;
+}
+
+.fp-closing .float-char {
+  font-size: 17px;
+  color: var(--accent);
 }
 
 .intro-text {
@@ -449,14 +898,13 @@ onUnmounted(() => {
 /* ===== 倒计时 ===== */
 .countdown {
   text-align: center;
-  background: linear-gradient(180deg, var(--bg) 0%, #f6e7dd 100%);
 }
 
 .cd-boxes {
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 34px;
+  margin-top: 30px;
 }
 
 .cd-cell {
@@ -476,6 +924,18 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
+  animation: pop 0.5s ease;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1.25);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .cd-label {
@@ -490,7 +950,7 @@ onUnmounted(() => {
 }
 
 .info-card {
-  margin: 30px auto 0;
+  margin: 24px auto 0;
   max-width: 480px;
   background: var(--card);
   border: 1px solid #f0dcd2;
@@ -545,16 +1005,36 @@ onUnmounted(() => {
   width: 100%;
 }
 
-.seg-masonry {
-  columns: 2;
-  column-gap: 12px;
+.seg-cols {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
   text-align: left;
 }
 
-.seg-masonry img {
+.seg-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seg-col img {
   width: 100%;
-  margin-bottom: 12px;
-  break-inside: avoid;
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segment img,
+  .intro-photo img {
+    transition: transform 0.5s ease;
+  }
+
+  .segment img:hover,
+  .intro-photo:hover img {
+    transform: scale(1.02);
+  }
 }
 
 /* ===== 结尾 ===== */
@@ -611,6 +1091,31 @@ onUnmounted(() => {
 .reveal.in-view {
   opacity: 1;
   transform: none;
+}
+
+/* 尊重系统"减少动态效果"设置 */
+@media (prefers-reduced-motion: reduce) {
+  .petal,
+  .heart,
+  .sparkle,
+  .chevron,
+  .hrt,
+  .disc,
+  .cover-bg,
+  .cd-num,
+  .float-char {
+    animation: none !important;
+  }
+
+  .cover-content > * {
+    animation: none !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* 桌面端居中限宽 */
