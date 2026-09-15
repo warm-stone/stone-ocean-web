@@ -39,6 +39,3 @@ AGENTS.md
 
 # 原始婚纱照（不提交，web 用 public/invite 压缩图）
 /img/
-
-# 版权音乐（不入库，部署时手动放置）
-/public/music/simple-love.mp3
