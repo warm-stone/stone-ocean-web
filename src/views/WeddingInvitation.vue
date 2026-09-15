@@ -254,7 +254,7 @@ const wide = (name: string): AlbumSeg => ({ layout: 'wide', photos: [P(name)], c
 
 // 相册编排：竖版照片两列瀑布流，横版照片整幅展示
 const gallery: AlbumSeg[] = [
-  masonry(['photo-03', 'photo-04', 'photo-06', 'photo-08']),
+  masonry(['photo-03', 'photo-04']),
   wide('photo-05'),
   masonry(['photo-09', 'photo-10', 'photo-12', 'photo-14']),
   wide('photo-07'),
