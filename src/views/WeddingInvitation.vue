@@ -92,7 +92,7 @@
         我们从相识、相知到相爱，一路走来历经风雨，终于决定携手步入婚姻的殿堂。
         这一天我们期待已久，真诚地邀请您，与我们一同见证这幸福时刻。
       </p>
-      <div class="intro-photo">
+      <div class="intro-photo" @click="openViewerFor(introSrc)">
         <img :src="introSrc" alt="婚纱照" loading="lazy" />
       </div>
     </section>
@@ -175,6 +175,7 @@
           :src="seg.photos[0]?.src"
           :alt="`婚纱照 ${i + 1}`"
           loading="lazy"
+          @click="openViewerFor(seg.photos[0]?.src ?? '')"
         />
         <div v-else class="seg-cols">
           <div v-for="(col, ci) in seg.cols" :key="ci" class="seg-col">
@@ -184,6 +185,7 @@
               :src="ph.src"
               :alt="`婚纱照 ${i + 1}`"
               loading="lazy"
+              @click="openViewerFor(ph.src)"
             />
           </div>
         </div>
@@ -217,6 +219,87 @@
     </section>
 
     <footer class="footer">— END —</footer>
+
+    <!-- 图片查看器：点击看大图，可缩放 / 拖拽 / 左右切换 -->
+    <Teleport to="body">
+      <div
+        v-if="viewerOpen"
+        class="viewer"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="`婚纱照 ${viewerIndex + 1}`"
+        @click.self="closeViewer"
+        @wheel.prevent="onViewerWheel"
+        @pointerdown="onViewerPointerDown"
+        @pointermove="onViewerPointerMove"
+        @pointerup="onViewerPointerUp"
+        @pointercancel="onViewerPointerUp"
+      >
+        <img
+          class="viewer-img"
+          :class="{ 'is-dragging': dragging }"
+          :src="currentPhoto"
+          :style="viewerImgStyle"
+          :alt="`婚纱照 ${viewerIndex + 1}`"
+          @dblclick="toggleZoom"
+        />
+        <button
+          class="viewer-btn viewer-close"
+          type="button"
+          aria-label="关闭"
+          @click.stop="closeViewer"
+          @pointerdown.stop
+        >
+          ✕
+        </button>
+        <button
+          class="viewer-btn viewer-prev"
+          type="button"
+          aria-label="上一张"
+          @click.stop="prevPhoto"
+          @pointerdown.stop
+        >
+          ‹
+        </button>
+        <button
+          class="viewer-btn viewer-next"
+          type="button"
+          aria-label="下一张"
+          @click.stop="nextPhoto"
+          @pointerdown.stop
+        >
+          ›
+        </button>
+        <div class="viewer-zoom-bar" @pointerdown.stop>
+          <button
+            class="viewer-btn viewer-zoom"
+            type="button"
+            aria-label="缩小"
+            @click.stop="zoomBy(-1)"
+          >
+            −
+          </button>
+          <span class="viewer-zoom-level">{{ zoomPercent }}%</span>
+          <button
+            class="viewer-btn viewer-zoom"
+            type="button"
+            aria-label="放大"
+            @click.stop="zoomBy(1)"
+          >
+            ＋
+          </button>
+          <button
+            class="viewer-btn viewer-reset"
+            type="button"
+            aria-label="还原到原始大小"
+            @click.stop="setScale(1)"
+          >
+            1:1
+          </button>
+        </div>
+        <div class="viewer-counter">{{ viewerIndex + 1 }} / {{ viewerList.length }}</div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -354,6 +437,142 @@ const onAudioError = () => {
   console.warn('[背景音乐] 音频加载失败，请确认 public/music/simple-love.mp3 存在')
 }
 
+// ====== 图片查看器（点击看大图，可缩放/拖拽/左右切换） ======
+const viewerOpen = ref(false)
+const viewerIndex = ref(0)
+const scale = ref(1)
+const tx = ref(0)
+const ty = ref(0)
+const dragging = ref(false)
+const MIN_SCALE = 1
+const MAX_SCALE = 5
+
+// 可查看的照片：引言图 + 相册全部照片（按展示顺序）
+const viewerList = computed<Photo[]>(() => [
+  { src: introSrc },
+  ...gallery.flatMap((seg) => seg.photos),
+])
+
+const currentPhoto = computed(() => viewerList.value[viewerIndex.value]?.src ?? '')
+const zoomPercent = computed(() => Math.round(scale.value * 100))
+
+const viewerImgStyle = computed(() => ({
+  transform: `translate3d(${tx.value}px, ${ty.value}px, 0) scale(${scale.value})`,
+  transition: dragging.value ? 'none' : 'transform 0.25s ease',
+}))
+
+const setScale = (next: number) => {
+  scale.value = Math.min(MAX_SCALE, Math.max(MIN_SCALE, next))
+  if (scale.value === MIN_SCALE) {
+    tx.value = 0
+    ty.value = 0
+  }
+}
+
+const zoomBy = (dir: number) => {
+  setScale(scale.value * (dir > 0 ? 1.35 : 1 / 1.35))
+}
+
+const toggleZoom = () => {
+  if (scale.value > MIN_SCALE) setScale(MIN_SCALE)
+  else setScale(2.5)
+}
+
+const openViewer = (index: number) => {
+  viewerIndex.value = index
+  setScale(MIN_SCALE)
+  viewerOpen.value = true
+  document.body.style.overflow = 'hidden'
+}
+
+const openViewerFor = (src: string) => {
+  const idx = viewerList.value.findIndex((p) => p.src === src)
+  if (idx >= 0) openViewer(idx)
+}
+
+const closeViewer = () => {
+  viewerOpen.value = false
+  document.body.style.overflow = ''
+  pointers.clear()
+  pinchStart.value = null
+  dragStart.value = null
+  dragging.value = false
+}
+
+const prevPhoto = () => {
+  viewerIndex.value = (viewerIndex.value - 1 + viewerList.value.length) % viewerList.value.length
+  setScale(MIN_SCALE)
+}
+
+const nextPhoto = () => {
+  viewerIndex.value = (viewerIndex.value + 1) % viewerList.value.length
+  setScale(MIN_SCALE)
+}
+
+// 指针状态：单指拖拽/滑动，双指捏合缩放
+const pointers = new Map<number, { x: number; y: number }>()
+const pinchStart = ref<{ dist: number; scale: number } | null>(null)
+const dragStart = ref<{ x: number; y: number; tx: number; ty: number } | null>(null)
+let swipeStartX = 0
+
+const pointerDist = () => {
+  const pts = [...pointers.values()]
+  return Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y)
+}
+
+const onViewerWheel = (e: WheelEvent) => {
+  zoomBy(e.deltaY < 0 ? 1 : -1)
+}
+
+const onViewerPointerDown = (e: PointerEvent) => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  if (pointers.size === 1) {
+    dragging.value = true
+    dragStart.value = { x: e.clientX, y: e.clientY, tx: tx.value, ty: ty.value }
+    swipeStartX = e.clientX
+  } else if (pointers.size === 2) {
+    pinchStart.value = { dist: pointerDist(), scale: scale.value }
+    dragStart.value = null
+  }
+}
+
+const onViewerPointerMove = (e: PointerEvent) => {
+  if (!pointers.has(e.pointerId)) return
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+  if (pinchStart.value && pointers.size >= 2) {
+    setScale((pointerDist() / pinchStart.value.dist) * pinchStart.value.scale)
+    return
+  }
+  if (dragStart.value && pointers.size === 1 && scale.value > MIN_SCALE) {
+    tx.value = dragStart.value.tx + (e.clientX - dragStart.value.x)
+    ty.value = dragStart.value.ty + (e.clientY - dragStart.value.y)
+  }
+}
+
+const onViewerPointerUp = (e: PointerEvent) => {
+  pointers.delete(e.pointerId)
+  if (pointers.size < 2) pinchStart.value = null
+  if (pointers.size === 0) {
+    if (dragStart.value && scale.value === MIN_SCALE) {
+      const dx = e.clientX - swipeStartX
+      if (Math.abs(dx) > 48) {
+        if (dx < 0) nextPhoto()
+        else prevPhoto()
+      }
+    }
+    dragging.value = false
+    dragStart.value = null
+  }
+}
+
+// 查看器键盘控制：ESC 关闭，左右方向键切换
+const onViewerKeydown = (e: KeyboardEvent) => {
+  if (!viewerOpen.value) return
+  if (e.key === 'Escape') closeViewer()
+  else if (e.key === 'ArrowLeft') prevPhoto()
+  else if (e.key === 'ArrowRight') nextPhoto()
+}
+
 // ====== 滚动渐显 ======
 let observer: IntersectionObserver | undefined
 
@@ -386,6 +605,8 @@ onMounted(() => {
   }
   window.addEventListener('pointerdown', firstTouchHandler, { once: true })
 
+  window.addEventListener('keydown', onViewerKeydown)
+
   timer = window.setInterval(() => {
     now.value = Date.now()
   }, 1000)
@@ -406,7 +627,13 @@ onMounted(() => {
 onUnmounted(() => {
   if (timer) window.clearInterval(timer)
   if (firstTouchHandler) window.removeEventListener('pointerdown', firstTouchHandler)
+  window.removeEventListener('keydown', onViewerKeydown)
   observer?.disconnect()
+  // 防御：组件卸载时若查看器仍开着，解除页面滚动锁定
+  if (viewerOpen.value) {
+    viewerOpen.value = false
+    document.body.style.overflow = ''
+  }
 })
 </script>
 
@@ -1093,6 +1320,134 @@ onUnmounted(() => {
   color: #c4b2ab;
   font-size: 11px;
   letter-spacing: 4px;
+}
+
+/* 相册图片可点击提示 */
+.segment img,
+.intro-photo img {
+  cursor: zoom-in;
+}
+
+/* ===== 图片查看器 ===== */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(22, 18, 16, 0.96);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.viewer-img {
+  max-width: 96vw;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  cursor: zoom-in;
+  will-change: transform;
+}
+
+.viewer-img.is-dragging {
+  cursor: grabbing;
+}
+
+.viewer-btn {
+  position: absolute;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 2;
+}
+
+.viewer-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.viewer-close {
+  top: 18px;
+  right: 18px;
+  font-size: 18px;
+}
+
+.viewer-prev {
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 30px;
+  padding-bottom: 4px;
+}
+
+.viewer-next {
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 30px;
+  padding-bottom: 4px;
+}
+
+.viewer-zoom-bar {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 2;
+}
+
+.viewer-zoom {
+  position: static;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+}
+
+.viewer-zoom-level {
+  min-width: 52px;
+  text-align: center;
+  color: #fff;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.viewer-reset {
+  position: static;
+  width: auto;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.viewer-counter {
+  position: absolute;
+  top: 28px;
+  left: 22px;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13px;
+  letter-spacing: 1px;
+  z-index: 2;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ===== 滚动渐显 ===== */
