@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import 'pinia-plugin-persistedstate'
 import type { User } from '@/utils/interfaces.ts'
 
 const StoreId = {
