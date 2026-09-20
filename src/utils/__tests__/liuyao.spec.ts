@@ -4,6 +4,7 @@ import {
   buildHexagram,
   calcGanZhi,
   findHexagram,
+  formatChartText,
   julianDayNumber,
   najiaAt,
   relativesOf,
@@ -281,5 +282,23 @@ describe('装卦（完整排盘）', () => {
       expect(t.moving).toBe(t.value === 6 || t.value === 9)
       expect(t.yang).toBe(t.value === 7 || t.value === 9)
     }
+  })
+
+  it('formatChartText 生成完整可分享文本', () => {
+    const tosses = [0, 1, 2, 3, 4, 5].map(() => staticToss(true)) // 六阳 → 乾为天（静卦）
+    const chart = buildChart(tosses, new Date(1949, 9, 1, 12)) // 甲子日
+    expect(chart).not.toBeNull()
+    const text = formatChartText(chart!, '测试财运')
+    expect(text).toContain('【六爻铜钱卦 · 排盘结果】')
+    expect(text).toContain('所问之事：测试财运')
+    expect(text).toContain('甲子日')
+    expect(text).toContain('旬空')
+    expect(text).toContain('本卦【乾为天】')
+    expect(text).toContain('乾宫')
+    expect(text).toContain('静卦')
+    expect(text).toContain('断卦参考')
+    expect(text).toContain('初爻 | 青龙 | 甲子')
+    expect(text).toContain('世')
+    expect(text).toContain('上爻')
   })
 })

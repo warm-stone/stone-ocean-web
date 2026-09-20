@@ -119,6 +119,15 @@
             <el-tag v-else-if="chart.liuHe" size="small" type="success">六合</el-tag>
             <el-tag v-else size="small" type="info">非冲非合</el-tag>
             <el-tag v-if="chart.staticHexagram" size="small" type="warning">静卦</el-tag>
+            <el-button
+              class="copy-btn"
+              size="small"
+              type="primary"
+              plain
+              :icon="CopyDocument"
+              @click="copyResult"
+              >一键复制结果</el-button
+            >
           </div>
         </template>
 
@@ -273,9 +282,11 @@ import {
   ElCollapseItem,
   ElTable,
   ElTableColumn,
+  ElMessage,
 } from 'element-plus'
 import {
   buildChart,
+  formatChartText,
   generateAnalysis,
   guessYongShen,
   tossOnce,
@@ -283,6 +294,7 @@ import {
   type LiuYaoChart,
   type TossResult,
 } from '@/utils/liuyao.ts'
+import { CopyDocument } from '@element-plus/icons-vue'
 
 const question = ref('')
 const tossTime = ref<Date>(new Date())
@@ -363,6 +375,38 @@ function resetAll() {
     clearTimeout(autoTimer)
     autoTimer = null
   }
+}
+
+/** 一键复制：优先 Clipboard API，降级 textarea + execCommand */
+async function copyResult() {
+  if (!chart.value) return
+  const text = formatChartText(chart.value, question.value)
+  let ok = false
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      ok = true
+    }
+  } catch {
+    ok = false
+  }
+  if (!ok) {
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      ta.setAttribute('readonly', '')
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.select()
+      ok = document.execCommand('copy')
+      document.body.removeChild(ta)
+    } catch {
+      ok = false
+    }
+  }
+  if (ok) ElMessage.success('排盘结果已复制，可粘贴分享')
+  else ElMessage.error('复制失败，请手动选择文字复制')
 }
 
 watch(
@@ -625,6 +669,10 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.copy-btn {
+  margin-left: auto;
 }
 
 .hex-name {

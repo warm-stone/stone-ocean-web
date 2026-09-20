@@ -1013,3 +1013,50 @@ export function generateAnalysis(chart: LiuYaoChart, question: string): string[]
   out.push('—— 卦理参考，仅供娱乐；人生际遇终在自身努力与善缘。')
   return out
 }
+
+/** 生成可复制/分享的完整排盘文本 */
+export function formatChartText(chart: LiuYaoChart, question: string): string {
+  const { original, changed, time } = chart
+  const out: string[] = []
+
+  out.push('【六爻铜钱卦 · 排盘结果】')
+  out.push(`所问之事：${question || '（未填写）'}`)
+  out.push(
+    `起卦时间：${time.yearStem}${time.yearBranch}年 ${time.monthStem}${time.monthBranch}月 ${time.dayStem}${time.dayBranch}日 ${time.hourStem}${time.hourBranch}时（旬空：${time.kongWang.join('、')}${time.lunar ? `；${time.lunar}` : ''}）`,
+  )
+  out.push(
+    `本卦【${original.name}】${original.palace}·${original.palacePosition}　五行：${original.element}　卦意：${original.theme}`,
+  )
+  if (changed) {
+    out.push(
+      `变卦【${changed.name}】${changed.palace}·${changed.palacePosition}　五行：${changed.element}　（动爻 ${chart.movingCount} 个）`,
+    )
+  } else {
+    out.push('变卦：无（六爻安静，静卦）')
+  }
+  if (chart.liuChong) out.push('卦性：六冲卦（性主散、快、不稳定，测久远之事难成难守）')
+  else if (chart.liuHe) out.push('卦性：六合卦（性主合、慢、稳定持久，测合作婚姻类为吉）')
+
+  out.push('')
+  out.push('爻位 | 六神 | 干支 | 六亲 | 世应 | 本卦 | 动 | 变卦 | 变卦六亲 | 状态')
+  for (let i = 5; i >= 0; i--) {
+    const l = chart.lines[i]!
+    const ya = l.toss.yang ? '—' : '- -'
+    const cya = l.hasChanged || changed ? (l.changedYang ? '—' : '- -') : ' '
+    const mark = l.mark || ' '
+    const moving = l.moving ? (l.toss.name === '老阳' ? '○' : '×') : ' '
+    const tags: string[] = [l.wangShuai]
+    if (l.kongWang) tags.push('空')
+    if (l.yuePo) tags.push('破')
+    if (l.riChong) tags.push('冲')
+    if (l.riHe) tags.push('合')
+    out.push(
+      `${LINE_NAMES[i]} | ${l.spirit} | ${l.originalStem}${l.originalBranch} | ${l.originalRelatives} | ${mark} | ${ya} | ${moving} | ${cya} | ${l.changedRelatives ?? '—'} | ${tags.join('/')}`,
+    )
+  }
+
+  out.push('')
+  out.push('—— 断卦参考 ——')
+  out.push(generateAnalysis(chart, question).join('\n'))
+  return out.join('\n')
+}
