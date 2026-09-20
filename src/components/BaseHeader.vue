@@ -19,8 +19,8 @@ function gotoVOTE() {
   window.location.href = '/vote4fun'
 }
 
-function gotoGames() {
-  window.location.href = '/game'
+function gotoLiuyao() {
+  window.location.href = '/liuyao'
 }
 
 // 处理鼠标移动事件
@@ -90,8 +90,9 @@ onUnmounted(() => {
   <el-menu class="el-menu-demo" mode="horizontal" :ellipsis="false">
     <el-menu-item index="1"><a :href="blogUrl" style="text-decoration: none">博客</a></el-menu-item>
     <el-menu-item index="2" @click="gotoVOTE"> 广场</el-menu-item>
+    <el-menu-item index="4" @click="gotoLiuyao">☯ 六爻</el-menu-item>
     <!-- 为index="3"的菜单添加鼠标移动事件监听 -->
-    <el-sub-menu index="3" @mousemove="handleMouseMove">
+    <el-sub-menu class="nav-spacer" index="3" @mousemove="handleMouseMove">
       <template #title>{{ fishingTitle }}</template>
     </el-sub-menu>
     <el-menu-item index="10">
@@ -111,7 +112,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.el-menu--horizontal > .el-sub-menu:nth-child(3) {
+/* 该菜单项作为弹性伸缩占位，把其后(黑暗模式/登录)推到右侧 */
+.el-menu--horizontal > .nav-spacer {
   margin-right: auto;
 }
 </style>

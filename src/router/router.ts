@@ -51,6 +51,11 @@ const router = createRouter({
       component: () => import('@/views/BeatingHeart.vue'),
     },
     {
+      path: '/liuyao',
+      name: '六爻卜算',
+      component: () => import('@/views/LiuYao.vue'),
+    },
+    {
       path: '/invite',
       name: 'invite',
       component: () => import('@/views/WeddingInvitation.vue'),
