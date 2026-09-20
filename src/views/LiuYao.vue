@@ -577,11 +577,12 @@ onUnmounted(() => {
 
 .mini-yao {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 3px;
   align-items: center;
-  height: 26px;
   justify-content: center;
+  height: 26px;
+  width: 36px;
 }
 
 .mini-bar {
@@ -595,7 +596,6 @@ onUnmounted(() => {
 .mini-bar.yin {
   width: 13px;
   background: var(--el-text-color-primary);
-  margin: 0 1px;
 }
 
 .moving-mark {
@@ -685,11 +685,12 @@ onUnmounted(() => {
 
 .yao.inline {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 3px;
   width: 44px;
+  height: 12px;
   align-items: center;
-  padding: 2px 0;
+  justify-content: center;
 }
 
 .bar {
@@ -702,7 +703,6 @@ onUnmounted(() => {
 
 .bar.yin {
   width: 17px;
-  margin: 0 2px;
   background: var(--el-color-primary);
 }
 
